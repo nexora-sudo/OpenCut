@@ -59,7 +59,7 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at our discord server.
+reported using GitHub’s built-in report controls on the relevant content. The maintainer of this fork moderates its issues and pull requests; this fork does not operate the upstream Discord server.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the

@@ -1,27 +1,10 @@
-# Getting Help
+# Community support
 
-Thanks for using OpenCut! If you need help, here are your options:
+This is the independent nexora-sudo fork of OpenCut Classic. Support takes place in [this fork's Issues](https://github.com/nexora-sudo/OpenCut/issues), not in the official OpenCut project's channels.
 
-## Documentation
+- Read the [README](../README.md) for setup and known limitations.
+- Use [New issue](https://github.com/nexora-sudo/OpenCut/issues/new/choose) to report a bug, suggest a feature or correct a translation.
+- For general setup questions, open a blank issue and explain what you tried. Portuguese, English and Simplified Chinese are welcome.
+- Search existing issues first. Do not share secrets, private media or personal data.
 
-- Check our [README](../README.md) for basic setup instructions
-- Review the [Contributing Guidelines](CONTRIBUTING.md) for development setup
-
-## Issues
-
-- **Bug reports**: Use the bug report template
-- **Feature requests**: Use the feature request template
-- **Questions**: Use GitHub Discussions for general questions
-
-## Community
-
-- Join our discussions on GitHub
-- Follow the [Code of Conduct](CODE_OF_CONDUCT.md)
-
-## Response Times
-
-- Issues are typically triaged within 2-3 business days
-- Feature requests may take longer to evaluate
-- Security issues are handled with priority
-
-We appreciate your patience and contributions to making OpenCut better!
+This is a volunteer community project. Responses and feature delivery have no guaranteed deadline. Follow the [Code of Conduct](CODE_OF_CONDUCT.md).

@@ -1,11 +1,18 @@
-⚠️ READ BEFORE SUBMITTING ⚠️
+## What changes and why?
 
-We are not currently accepting PRs except for critical bugs.
+Describe the problem and resulting behavior. Link the related issue (for example `Fixes #123` only when this PR resolves it).
 
-If this is a bug fix:
-- [ ] I've opened an issue first
-- [ ] This was approved by a maintainer
+## Validation
 
-If this is a feature:
+Describe tests, manual checks and any remaining limitations. Include before/after screenshots for visible changes.
 
-This PR will be closed. Please open an issue to discuss first.
+## AI assistance
+
+State whether substantial AI assistance was used and how you reviewed the result.
+
+## Checklist
+
+- [ ] This PR targets `nexora-sudo/OpenCut`, branch `feat/portuguese-chinese`.
+- [ ] The change is focused and I tested the affected behavior.
+- [ ] Relevant interface translations and documentation are updated.
+- [ ] Original credits and license are preserved; no credentials or private media are included.

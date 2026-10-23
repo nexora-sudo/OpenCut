@@ -1,198 +1,35 @@
-# Contributing to OpenCut
+# Contributing to the OpenCut Classic community fork
 
-⚠️ We are currently NOT accepting feature PRs while we build out the core editor.
+Bug fixes, feature proposals, translations, documentation and testing are welcome in this independent fork maintained by nexora-sudo. It is not the official OpenCut project. You may communicate in Portuguese, English or Simplified Chinese.
 
-If you want to contribute:
+## Report a problem or suggest an idea
 
-1. Open an issue first to discuss
-2. Wait for maintainer approval
-3. Only then start coding
+Use [New issue](https://github.com/nexora-sudo/OpenCut/issues/new/choose) and select Bug report, Feature request or Translation. Search existing issues first; add useful information to an existing report rather than creating a duplicate. Use reactions to support ideas.
 
-Critical bug fixes may be accepted on a case-by-case basis.
+For bugs, include steps to reproduce, expected and actual behavior, browser, operating system, and the tested version or commit. Share only non-private samples. For features, describe the problem and the proposed behavior. Acceptance and timing depend on maintainer review; an issue is not a promise of implementation.
 
-Thank you for your interest in contributing to OpenCut! This document provides guidelines and instructions for contributing.
+## Contribute code
 
-## Getting Started
+1. Follow the [README local setup](../README.md#run-locally).
+2. Branch from `feat/portuguese-chinese`, the default branch of this fork. Use a descriptive name such as `fix/export-dialog` or `feat/timeline-shortcuts`.
+3. Keep each change focused. Discuss large features in an issue before investing substantial implementation work; small fixes and documentation improvements can be submitted directly.
+4. Follow existing architecture and code conventions. Preserve the original MIT license and credits. Do not commit credentials, private media, build output or dependencies.
+5. Run checks relevant to your change and describe what you tested. For translation work, run `bun test apps/web/src/i18n` from the repository root. The application type check runs from `apps/web` with `bunx tsc --project tsconfig.app-check.json --noEmit`.
+6. Open a pull request **against nexora-sudo/OpenCut**, targeting `feat/portuguese-chinese`, rather than the official upstream. Link the issue and include screenshots for visible changes. Fork contributors should verify the destination repository before submitting.
 
-### Prerequisites
+The full upstream test suite has existing WASM and timeline failures. Report failures accurately and distinguish new regressions from existing problems. Do not bypass checks just to obtain a passing result.
 
-- [Node.js](https://nodejs.org/en/) (v18 or later)
-- [Bun](https://bun.sh/docs/installation)
-  (for `npm` alternative)
-- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
-- Rust toolchain (only needed for `apps/desktop`)
+AI-assisted contributions are welcome. Disclose substantial AI assistance in the pull request, review the output, and explain how you validated it. Contributors remain responsible for correctness and licensing.
 
-> **Note:** Docker is optional, but it's essential for running the local database and Redis services. If you're planning to contribute to frontend features, you can skip the Docker setup. If you have followed the steps below in [Setup](#setup), you're all set to go!
+## How requests are organized
 
-### Setup
+- `needs-triage`: awaiting initial review.
+- `bug`, `enhancement`, `translation`, `documentation`, `question`: type of request.
+- `accepted`: agreed direction, without a delivery date.
+- `in-progress`: actively being worked on.
+- `help wanted`: contributions welcome.
+- `good first issue`: a maintainer has identified a suitable starting task.
 
-1. Fork the repository
-2. Clone your fork locally
-3. Navigate to the web app directory: `cd apps/web`
-4. Copy `.env.example` to `.env.local`:
+Maintainers apply status labels after review. A suggestion may be closed with an explanation or linked to an existing issue. There is no guaranteed response time.
 
-   ```bash
-   # Unix/Linux/Mac
-   cp .env.example .env.local
-
-   # Windows Command Prompt
-   copy .env.example .env.local
-
-   # Windows PowerShell
-   Copy-Item .env.example .env.local
-   ```
-
-5. Install dependencies: `bun install`
-6. Start the development server: `bun run dev`
-
-> **Note:** Web development uses the published `opencut-wasm` package by default, so a fresh clone does not need a local WASM build.
->
-> If you are editing `rust/wasm`, run `bun run build:wasm`, then `cd rust/wasm/pkg && bun link`, then `cd ../../../apps/web && bun link opencut-wasm`.
-
-### Desktop setup
-
-Only needed if you're working on `apps/desktop`. See [`apps/desktop/README.md`](../apps/desktop/README.md) — it's a two-step process: Rust toolchain first via `script/setup-rust`, then desktop native dependencies via `apps/desktop/script/setup`.
-
-## What to Focus On
-
-**🎯 Good Areas to Contribute:**
-
-- Timeline functionality and UI improvements
-- Project management features
-- Performance optimizations
-- Bug fixes in existing functionality
-- UI/UX improvements
-- Documentation and testing
-
-**⚠️ Areas to Avoid:**
-
-- Preview panel enhancements (text fonts, stickers, effects)
-- Export functionality improvements
-- Preview rendering optimizations
-
-**Why?** We're currently planning a major refactor of the preview system. The current preview renders DOM elements (HTML), but we're moving to a binary rendering approach similar to CapCut. This new system will ensure consistency between preview and export, and provide much better performance and quality.
-
-The current HTML-based preview is essentially a prototype - the binary approach will be the "real deal." To avoid wasted effort, please focus on other areas of the application until this refactor is complete.
-
-If you're unsure whether your idea falls into the preview category, feel free to ask us [directly in discord](https://discord.gg/zmR9N35cjK) or create a GitHub issue!
-
-## Development Setup
-
-### Local Development
-
-1. Start the database and Redis services:
-
-   ```bash
-   # From project root
-   docker-compose up -d
-   ```
-
-2. Navigate to the web app directory:
-
-   ```bash
-   cd apps/web
-   ```
-
-3. Copy `.env.example` to `.env.local`:
-
-   ```bash
-   # Unix/Linux/Mac
-   cp .env.example .env.local
-
-   # Windows Command Prompt
-   copy .env.example .env.local
-
-   # Windows PowerShell
-   Copy-Item .env.example .env.local
-   ```
-
-4. Configure required environment variables in `.env.local`:
-
-   **Required Variables:**
-
-   ```bash
-   # Database (matches docker-compose.yaml)
-   DATABASE_URL="postgresql://opencut:opencut@localhost:5432/opencut"
-
-   # Generate a secure secret for Better Auth
-   BETTER_AUTH_SECRET="your-generated-secret-here"
-   NEXT_PUBLIC_SITE_URL="http://localhost:3000"
-
-   # Redis (matches docker-compose.yaml)
-   UPSTASH_REDIS_REST_URL="http://localhost:8079"
-   UPSTASH_REDIS_REST_TOKEN="example_token"
-
-   # Development
-   NODE_ENV="development"
-   ```
-
-   **Generate BETTER_AUTH_SECRET:**
-
-   ```bash
-   # Unix/Linux/Mac
-   openssl rand -base64 32
-
-   # Windows PowerShell (simple method)
-   [System.Web.Security.Membership]::GeneratePassword(32, 0)
-
-   # Cross-platform (using Node.js)
-   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-
-   # Or use an online generator: https://generate-secret.vercel.app/32
-   ```
-
-5. Run database migrations: `bun run db:migrate`
-6. Start the development server: `bun run dev`
-
-### Desktop
-
-Working on `apps/desktop`? See [`apps/desktop/README.md`](../apps/desktop/README.md) for setup. Web-only contributors can ignore this entirely.
-
-## How to Contribute
-
-### Reporting Bugs
-
-- Use the bug report template
-- Include steps to reproduce
-- Provide screenshots if applicable
-
-### Suggesting Features
-
-- Use the feature request template
-- Explain the use case
-- Consider implementation details
-
-### Code Contributions
-
-1. Create a new branch: `git checkout -b feature/your-feature-name`
-2. Make your changes
-3. Run the relevant checks for the area you touched:
-
-   - Web changes: from `apps/web`, run `bun run lint` and `bun run format`
-   - Desktop changes: run `./apps/desktop/script/setup` if your environment isn't set up yet
-
-4. Commit your changes with a descriptive message
-5. Push to your fork and create a pull request
-
-## Code Style
-
-- We use ESLint for linting and Prettier for formatting
-- Run `bun run format` from the `apps/web` directory to format code
-- Run `bun run lint` from the `apps/web` directory to check for linting issues
-- Follow the existing code patterns
-
-## Pull Request Process
-
-1. Fill out the pull request template completely
-2. Link any related issues
-3. Ensure CI passes
-4. Request review from maintainers
-5. Address any feedback
-
-## Community
-
-- Be respectful and inclusive
-- Follow our Code of Conduct
-- Help others in discussions and issues
-
-Thank you for contributing!
+Be respectful and follow the [Code of Conduct](CODE_OF_CONDUCT.md).

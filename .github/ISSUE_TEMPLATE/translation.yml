@@ -1,0 +1,50 @@
+{
+  "name": "Translation / Corrigir tradução",
+  "description": "Report missing, unclear or incorrect interface wording.",
+  "title": "[Translation] ",
+  "labels": ["translation", "needs-triage"],
+  "body":
+    [
+      {
+        "type": "markdown",
+        "attributes":
+          {
+            "value": "This is the independent nexora-sudo community fork of OpenCut Classic. You may write in Português, English or 简体中文. Search existing issues first. Do not include private media, credentials or personal data.",
+          },
+      },
+      {
+        "type": "dropdown",
+        "id": "language",
+        "attributes":
+          {
+            "label": "Language / Idioma",
+            "options": ["Português (Brasil)", "简体中文", "English"],
+          },
+        "validations": { "required": true },
+      },
+      {
+        "type": "input",
+        "id": "screen",
+        "attributes": { "label": "Screen or page / Tela ou página" },
+        "validations": { "required": true },
+      },
+      {
+        "type": "textarea",
+        "id": "current",
+        "attributes": { "label": "Current wording / Texto atual" },
+        "validations": { "required": true },
+      },
+      {
+        "type": "textarea",
+        "id": "suggested",
+        "attributes": { "label": "Suggested wording / Texto sugerido" },
+        "validations": { "required": true },
+      },
+      {
+        "type": "textarea",
+        "id": "context",
+        "attributes": { "label": "Context or screenshot / Contexto ou imagem" },
+        "validations": { "required": false },
+      },
+    ],
+}

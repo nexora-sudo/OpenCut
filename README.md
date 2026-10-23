@@ -1,4 +1,4 @@
-# OpenCut Classic — Portuguese & Chinese
+# OpenCut Classic — Community Edition
 
 An independent fork of [OpenCut Classic](https://github.com/OpenCut-app/opencut-classic), maintained by [nexora-sudo](https://github.com/nexora-sudo), with Portuguese and Simplified Chinese translations and an interface language selector.
 
@@ -6,13 +6,25 @@ An independent fork of [OpenCut Classic](https://github.com/OpenCut-app/opencut-
 
 This fork uses the original Classic editor. Upstream Classic is archived; the [OpenCut rewrite](https://github.com/OpenCut-app/OpenCut) is a different codebase. This is an independent community project, not an official OpenCut release.
 
+## Community: bugs and feature ideas
+
+This fork welcomes community bug fixes, feature proposals and translation improvements. You may write in **Português, English or 简体中文**.
+
+- [Report a bug](https://github.com/nexora-sudo/OpenCut/issues/new?template=bug_report.yml)
+- [Suggest a feature](https://github.com/nexora-sudo/OpenCut/issues/new?template=feature_request.yml)
+- [Correct a translation](https://github.com/nexora-sudo/OpenCut/issues/new?template=translation.yml)
+- [Browse open requests](https://github.com/nexora-sudo/OpenCut/issues)
+- [Contribute code or documentation](.github/CONTRIBUTING.md)
+
+Search for existing requests before posting. Add reactions to ideas you support. Reports are reviewed by the maintainer; suggestions are not guaranteed to be implemented. See the [contribution guide](.github/CONTRIBUTING.md) for labels and the review process.
+
 ## Languages
 
-| Language | Locale |
-| --- | --- |
-| Português (Brasil) — default | `pt-BR` |
+| Language                      | Locale  |
+| ----------------------------- | ------- |
+| Português (Brasil) — default  | `pt-BR` |
 | 简体中文 — Simplified Chinese | `zh-CN` |
-| English | `en` |
+| English                       | `en`    |
 
 Open the **gear icon** in the projects page or editor header, or select **Settings → Language** in the editor sidebar. Your preference is saved in this browser for future visits.
 
