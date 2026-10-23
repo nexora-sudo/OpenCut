@@ -1,3 +1,4 @@
+import { serializeFrame } from "./serialize-frame";
 import {
 	getCompositorCanvas,
 	getLastFrameProfile,
@@ -88,7 +89,7 @@ class WasmCompositor {
 	}
 
 	render(frame: FrameDescriptor) {
-		renderFrame(frame);
+		renderFrame(serializeFrame(frame));
 		if (isRenderPerfEnabled()) {
 			recordWasmFrameProfile(
 				getLastFrameProfile() as Array<{ name: string; durationMs: number }>,

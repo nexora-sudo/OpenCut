@@ -6,6 +6,7 @@ import { useEditor } from "@/editor/use-editor";
 import { useRafLoop } from "@/hooks/use-raf-loop";
 import { useContainerSize } from "@/hooks/use-container-size";
 import { useFullscreen } from "@/hooks/use-fullscreen";
+import { PreviewFrameRenderer } from "@/preview/frame-renderer";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { TICKS_PER_SECOND } from "@/wasm";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
@@ -139,9 +140,6 @@ function PreviewCanvas({
 }) {
 	const canvasMountRef = useRef<HTMLDivElement>(null);
 	const viewportRef = useRef<HTMLDivElement>(null);
-	const lastFrameRef = useRef(-1);
-	const lastSceneRef = useRef<RootNode | null>(null);
-	const renderingRef = useRef(false);
 	const { width: nativeWidth, height: nativeHeight } = usePreviewSize();
 	const viewportSize = useContainerSize({ containerRef: viewportRef });
 	const editor = useEditor();
@@ -182,9 +180,12 @@ function PreviewCanvas({
 		};
 	}, [renderer]);
 
+	const frameRenderer = useMemo(
+		() => new PreviewFrameRenderer<RootNode>(),
+		[renderer],
+	);
 	const render = useCallback(() => {
-		if (!renderTree || renderingRef.current) return;
-
+		if (!renderTree) return;
 		const renderTime = Math.min(
 			editor.playback.getCurrentTime(),
 			editor.timeline.getLastFrameTime(),
@@ -193,23 +194,13 @@ function PreviewCanvas({
 			(TICKS_PER_SECOND * renderer.fps.denominator) / renderer.fps.numerator,
 		);
 		const frame = Math.floor(renderTime / ticksPerFrame);
-
-		if (
-			frame === lastFrameRef.current &&
-			renderTree === lastSceneRef.current
-		) {
-			return;
-		}
-
-		renderingRef.current = true;
-		lastSceneRef.current = renderTree;
-		lastFrameRef.current = frame;
-		renderer
-			.render({ node: renderTree, time: renderTime })
-			.then(() => {
-				renderingRef.current = false;
-			});
-	}, [renderer, renderTree, editor.playback, editor.timeline]);
+		void frameRenderer.render({
+			scene: renderTree,
+			frame,
+			draw: () => renderer.render({ node: renderTree, time: renderTime }),
+			onError: (error) => console.error("Preview render failed:", error),
+		});
+	}, [renderer, frameRenderer, renderTree, editor.playback, editor.timeline]);
 
 	useRafLoop(render);
 
@@ -308,20 +299,20 @@ function PreviewCanvas({
 								ref={viewportRef}
 								className="relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden"
 							>
-							<div
-								ref={canvasMountRef}
-								className="absolute block border"
-								style={{
-									left: viewport.sceneLeft,
-									top: viewport.sceneTop,
-									width: viewport.sceneWidth,
-									height: viewport.sceneHeight,
-									background:
-										activeProject.settings.background.type === "blur"
-											? "transparent"
-											: activeProject?.settings.background.color,
-								}}
-							/>
+								<div
+									ref={canvasMountRef}
+									className="absolute block border"
+									style={{
+										left: viewport.sceneLeft,
+										top: viewport.sceneTop,
+										width: viewport.sceneWidth,
+										height: viewport.sceneHeight,
+										background:
+											activeProject.settings.background.type === "blur"
+												? "transparent"
+												: activeProject?.settings.background.color,
+									}}
+								/>
 								<PreviewOverlayLayer
 									instances={overlayInstances}
 									plane="under-interaction"
