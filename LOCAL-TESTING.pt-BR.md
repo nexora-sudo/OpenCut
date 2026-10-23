@@ -40,7 +40,7 @@ O código usa next-intl para isolar o idioma de cada requisição e atualizar co
 ## Base e limites
 
 A base usada é o OpenCut Classic, com o editor funcional. Seu fork no GitHub veio da reescrita sem editor pronto, por isso este trabalho foi preparado em uma pasta e branch separadas, `feat/portuguese-chinese`.
-Nenhuma alteração foi enviada ao GitHub e nada foi publicado.
+As alterações estão disponíveis no fork [nexora-sudo/OpenCut](https://github.com/nexora-sudo/OpenCut), na branch `feat/portuguese-chinese`.
 
 Além da tradução, foram corrigidas incompatibilidades que já impediam a inicialização: caminho das notas de versão, chamadas antigas do armazenamento e registro de adesivos e validadores de atalhos ausentes. Os ajustes de armazenamento preservam os dados existentes.
 
