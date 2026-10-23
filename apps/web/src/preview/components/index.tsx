@@ -154,13 +154,17 @@ function PreviewCanvas({
 	});
 	const { canPan, panByScreenDelta, scaleZoom } = viewport;
 
-	const renderer = useMemo(() => {
-		return new CanvasRenderer({
-			width: nativeWidth,
-			height: nativeHeight,
-			fps: activeProject.settings.fps,
-		});
-	}, [nativeWidth, nativeHeight, activeProject.settings.fps]);
+	const { renderer, frameRenderer } = useMemo(
+		() => ({
+			renderer: new CanvasRenderer({
+				width: nativeWidth,
+				height: nativeHeight,
+				fps: activeProject.settings.fps,
+			}),
+			frameRenderer: new PreviewFrameRenderer<RootNode>(),
+		}),
+		[nativeWidth, nativeHeight, activeProject.settings.fps],
+	);
 
 	// Mount the compositor's output canvas directly into the preview. wgpu
 	// renders straight into this element, so there is no intermediate copy —
@@ -180,10 +184,6 @@ function PreviewCanvas({
 		};
 	}, [renderer]);
 
-	const frameRenderer = useMemo(
-		() => new PreviewFrameRenderer<RootNode>(),
-		[renderer],
-	);
 	const render = useCallback(() => {
 		if (!renderTree) return;
 		const renderTime = Math.min(
