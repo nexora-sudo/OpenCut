@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ import { cn } from "@/utils/ui";
 import { EmptyView } from "./empty-view";
 
 export function PropertiesPanel() {
+	const t = useT();
+
 	const editor = useEditor();
 	useEditor((e) => e.scenes.getActiveSceneOrNull());
 	useEditor((e) => e.media.getAssets());
@@ -34,7 +37,7 @@ export function PropertiesPanel() {
 		return (
 			<div className="panel bg-background flex h-full flex-col items-center justify-center overflow-hidden rounded-sm border">
 				<p className="text-muted-foreground text-sm">
-					{selectedElements.length} elements selected.0
+					{selectedElements.length} {t("elements selected.0")}
 				</p>
 			</div>
 		);
@@ -77,7 +80,7 @@ export function PropertiesPanel() {
 											tabId: tab.id,
 										})
 									}
-									aria-label={tab.label}
+									aria-label={t(tab.label)}
 									className={cn(
 										"shrink-0",
 										"h-8 w-8",
@@ -87,7 +90,7 @@ export function PropertiesPanel() {
 									{tab.icon}
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent side="right">{tab.label}</TooltipContent>
+							<TooltipContent side="right">{t(tab.label)}</TooltipContent>
 						</Tooltip>
 					))}
 				</div>

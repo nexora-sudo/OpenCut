@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { useEditor } from "@/editor/use-editor";
 import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
 import {
@@ -86,6 +87,8 @@ export function TimelineToolbar({
 }
 
 function ToolbarLeftSection() {
+	const t = useT();
+
 	const editor = useEditor();
 	const mediaAssets = useEditor((currentEditor) =>
 		currentEditor.media.getAssets(),
@@ -121,7 +124,7 @@ function ToolbarLeftSection() {
 			? getSourceAudioActionLabel({
 					element: selectedElement.element,
 				})
-			: "Extract audio";
+			: t("Extract audio");
 	const isSelectedSourceAudioSeparated =
 		selectedElement?.element.type === "video" &&
 		isSourceAudioSeparated({
@@ -144,19 +147,19 @@ function ToolbarLeftSection() {
 			<TooltipProvider delayDuration={500}>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
-					tooltip="Split element"
+					tooltip={t("Split element")}
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignLeftIcon} />}
-					tooltip="Split left"
+					tooltip={t("Split left")}
 					onClick={({ event }) => handleAction({ action: "split-left", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignRightIcon} />}
-					tooltip="Split right"
+					tooltip={t("Split right")}
 					onClick={({ event }) =>
 						handleAction({ action: "split-right", event })
 					}
@@ -177,7 +180,7 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={Copy01Icon} />}
-					tooltip="Duplicate element"
+					tooltip={t("Duplicate element")}
 					onClick={({ event }) =>
 						handleAction({ action: "duplicate-selected", event })
 					}
@@ -185,14 +188,14 @@ function ToolbarLeftSection() {
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={SnowIcon} />}
-					tooltip="Freeze frame (coming soon)"
+					tooltip={t("Freeze frame (coming soon)")}
 					disabled={true}
 					onClick={({ event: _event }) => {}}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={Delete02Icon} />}
-					tooltip="Delete element"
+					tooltip={t("Delete element")}
 					onClick={({ event }) =>
 						handleAction({ action: "delete-selected", event })
 					}
@@ -204,7 +207,9 @@ function ToolbarLeftSection() {
 					<ToolbarButton
 						icon={<HugeiconsIcon icon={Bookmark02Icon} />}
 						isActive={isCurrentlyBookmarked}
-						tooltip={isCurrentlyBookmarked ? "Remove bookmark" : "Add bookmark"}
+						tooltip={
+							isCurrentlyBookmarked ? t("Remove bookmark") : t("Add bookmark")
+						}
 						onClick={({ event }) =>
 							handleAction({ action: "toggle-bookmark", event })
 						}
@@ -219,7 +224,7 @@ function ToolbarLeftSection() {
 							? graphEditor.state.cubicBezier
 							: null
 					}
-					message={graphEditor.state.message}
+					message={t(graphEditor.state.message)}
 					componentOptions={graphEditor.state.componentOptions}
 					activeComponentKey={graphEditor.state.activeComponentKey}
 					onActiveComponentKeyChange={graphEditor.onActiveComponentKeyChange}
@@ -246,13 +251,19 @@ function ToolbarLeftSection() {
 }
 
 function SceneSelector() {
+	const t = useT();
+
 	const editor = useEditor();
 	const currentScene = editor.scenes.getActiveScene();
 
 	return (
 		<div>
 			<SplitButton className="border-foreground/10 border">
-				<SplitButtonLeft>{currentScene?.name || "No Scene"}</SplitButtonLeft>
+				<SplitButtonLeft>
+					{currentScene?.isMain && currentScene.name === "Main scene"
+						? t("Main scene")
+						: currentScene?.name || t("No Scene")}
+				</SplitButtonLeft>
 				<SplitButtonSeparator />
 				<ScenesView>
 					<SplitButtonRight onClick={() => {}}>
@@ -275,6 +286,8 @@ function ToolbarRightSection({
 	onZoomChange: (zoom: number) => void;
 	onZoom: (options: { direction: "in" | "out" }) => void;
 }) {
+	const t = useT();
+
 	const snappingEnabled = useTimelineStore((s) => s.snappingEnabled);
 	const rippleEditingEnabled = useTimelineStore((s) => s.rippleEditingEnabled);
 	const toggleSnapping = useTimelineStore((s) => s.toggleSnapping);
@@ -286,14 +299,14 @@ function ToolbarRightSection({
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={MagnetIcon} />}
 					isActive={snappingEnabled}
-					tooltip="Auto snapping"
+					tooltip={t("Auto snapping")}
 					onClick={() => toggleSnapping()}
 				/>
 
 				<ToolbarButton
 					icon={<OcRippleIcon size={24} className="scale-110" />}
 					isActive={rippleEditingEnabled}
-					tooltip="Ripple editing"
+					tooltip={t("Ripple editing")}
 					onClick={() => toggleRippleEditing()}
 				/>
 			</TooltipProvider>
@@ -345,6 +358,8 @@ function ToolbarButton({
 	isActive?: boolean;
 	buttonWrapper?: (button: React.ReactElement) => React.ReactElement;
 }) {
+	const t = useT();
+
 	const button = (
 		<Button
 			variant={isActive ? "secondary" : "text"}
@@ -370,7 +385,7 @@ function ToolbarButton({
 	return (
 		<Tooltip delayDuration={200}>
 			<TooltipTrigger asChild>{trigger}</TooltipTrigger>
-			<TooltipContent>{tooltip}</TooltipContent>
+			<TooltipContent>{t(tooltip)}</TooltipContent>
 		</Tooltip>
 	);
 }

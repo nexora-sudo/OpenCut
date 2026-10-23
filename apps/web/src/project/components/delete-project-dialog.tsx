@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -22,6 +23,8 @@ export function DeleteProjectDialog({
 	onConfirm: () => void;
 	projectNames: string[];
 }) {
+	const t = useT();
+
 	const count = projectNames.length;
 	const isSingle = count === 1;
 	const singleName = isSingle ? projectNames[0] : null;
@@ -38,29 +41,31 @@ export function DeleteProjectDialog({
 					<DialogTitle>
 						{singleName ? (
 							<>
-								{"Delete '"}
+								{t("Delete '")}
 								<span className="inline-block max-w-[300px] truncate align-bottom">
 									{singleName}
 								</span>
 								{"'?"}
 							</>
 						) : (
-							`Delete ${count} projects?`
+							t("Delete {v0} projects?", { v0: count })
 						)}
 					</DialogTitle>
 				</DialogHeader>
 				<DialogBody>
 					<Alert variant="destructive">
-						<AlertTitle>Warning</AlertTitle>
+						<AlertTitle>{t("Warning")}</AlertTitle>
 						<AlertDescription>
-							This will permanently delete{" "}
-							{singleName ? `"${singleName}"` : `${count} projects`} and all
-							associated files.
+							{t("This will permanently delete")}{" "}
+							{singleName
+								? `"${singleName}"`
+								: t("{v0} projects", { v0: count })}{" "}
+							{t("and all associated files.")}
 						</AlertDescription>
 					</Alert>
 					<div className="flex flex-col gap-3">
 						<Label className="text-xs font-semibold text-slate-500">
-							Type "DELETE" to confirm
+							{t('Type "DELETE" to confirm')}
 						</Label>
 						<Input
 							type="text"
@@ -72,10 +77,10 @@ export function DeleteProjectDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Cancel
+						{t("Cancel")}
 					</Button>
 					<Button variant="destructive" onClick={onConfirm}>
-						Delete project
+						{t("Delete project")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

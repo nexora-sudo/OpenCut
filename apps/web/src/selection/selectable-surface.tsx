@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SelectionBox } from "@/selection/selection-box";
@@ -14,10 +15,7 @@ import {
 	selectRange,
 	toggleSelection,
 } from "@/selection/state";
-import type {
-	SelectableSurfaceProps,
-	SelectionState,
-} from "@/selection/types";
+import type { SelectableSurfaceProps, SelectionState } from "@/selection/types";
 import { useBoxSelect } from "@/selection/hooks/use-box-select";
 import { cn } from "@/utils/ui";
 
@@ -30,6 +28,7 @@ export function SelectableSurface({
 	onRevealComplete,
 	onSelectionChange,
 }: SelectableSurfaceProps) {
+	const t = useT();
 	const [selectionState, setSelectionState] = useState<SelectionState>(() =>
 		clearSelection(),
 	);
@@ -198,7 +197,11 @@ export function SelectableSurface({
 				return;
 			}
 
-			if (event.key !== "Enter" && event.key !== " " && event.key !== "Escape") {
+			if (
+				event.key !== "Enter" &&
+				event.key !== " " &&
+				event.key !== "Escape"
+			) {
 				return;
 			}
 
@@ -269,7 +272,7 @@ export function SelectableSurface({
 				ref={containerRef}
 				className={cn("relative min-h-full", className)}
 				role="listbox"
-				aria-label={ariaLabel}
+				aria-label={t(ariaLabel)}
 				aria-multiselectable="true"
 				tabIndex={0}
 				onMouseDown={handleMouseDown}

@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { cn } from "@/utils/ui";
 
 interface PanelViewProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -25,6 +26,8 @@ export function PanelView({
 	scrollRef,
 	...rest
 }: PanelViewProps) {
+	const t = useT();
+
 	return (
 		<div
 			className={cn("relative flex h-full flex-col", className)}
@@ -34,7 +37,7 @@ export function PanelView({
 			{!hideHeader && (
 				<div className="bg-background h-11 shrink-0 pl-3 pr-2 flex items-center justify-between border-b">
 					{title && (
-						<span className="text-muted-foreground text-sm">{title}</span>
+						<span className="text-muted-foreground text-sm">{t(title)}</span>
 					)}
 					{actions}
 				</div>

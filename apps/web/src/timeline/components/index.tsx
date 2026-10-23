@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -115,6 +116,8 @@ const TRACK_ICONS: Record<TimelineTrack["type"], ReactNode> = {
 };
 
 export function Timeline() {
+	const t = useT();
+
 	const snappingEnabled = useTimelineStore((s) => s.snappingEnabled);
 	const {
 		selectedElements,
@@ -302,12 +305,12 @@ export function Timeline() {
 
 	const { dragView, handleElementMouseDown, handleElementClick } =
 		useElementInteraction({
-		zoomLevel,
-		tracksContainerRef,
-		tracksScrollRef,
-		snappingEnabled,
-		onSnapPointChange: handleSnapPointChange,
-	});
+			zoomLevel,
+			tracksContainerRef,
+			tracksScrollRef,
+			snappingEnabled,
+			onSnapPointChange: handleSnapPointChange,
+		});
 	const isElementDragging = dragView.kind === "dragging";
 
 	const {
@@ -434,7 +437,7 @@ export function Timeline() {
 				"panel bg-background relative flex h-full flex-col overflow-hidden rounded-sm border"
 			}
 			{...dragProps}
-			aria-label="Timeline"
+			aria-label={t("Timeline")}
 		>
 			<TimelineToolbar
 				zoomLevel={zoomLevel}
@@ -455,9 +458,7 @@ export function Timeline() {
 					className="relative isolate flex flex-1 flex-col overflow-hidden"
 					ref={tracksContainerRef}
 				>
-					<SelectionBox
-						bounds={selectionBox?.bounds ?? null}
-					/>
+					<SelectionBox bounds={selectionBox?.bounds ?? null} />
 					<DragLine
 						dropTarget={dropTarget}
 						tracks={tracks}
@@ -751,6 +752,8 @@ function TimelineTrackRows({
 	isDragOver: boolean;
 	dropTarget: DropTarget | null;
 }) {
+	const t = useT();
+
 	const timeline = useEditor((e) => e.timeline);
 	const scene = useEditor((e) => e.scenes.getActiveSceneOrNull());
 	const tracks = useMemo<TimelineTrack[]>(
@@ -780,8 +783,8 @@ function TimelineTrackRows({
 	const draggingElementIds = useMemo(
 		() =>
 			dragView.kind === "dragging"
-			? dragView.memberTimeOffsets
-			: (null as ReadonlyMap<string, MediaTime> | null),
+				? dragView.memberTimeOffsets
+				: (null as ReadonlyMap<string, MediaTime> | null),
 		[dragView],
 	);
 	const sortedTracks = useMemo(() => {
@@ -843,7 +846,7 @@ function TimelineTrackRows({
 								invokeAction("paste-copied");
 							}}
 						>
-							Paste elements
+							{t("Paste elements")}
 						</ContextMenuItem>
 						<ContextMenuItem
 							icon={<HugeiconsIcon icon={VolumeHighIcon} />}
@@ -853,8 +856,8 @@ function TimelineTrackRows({
 							}}
 						>
 							{canTrackHaveAudio(track) && track.muted
-								? "Unmute track"
-								: "Mute track"}
+								? t("Unmute track")
+								: t("Mute track")}
 						</ContextMenuItem>
 						<ContextMenuItem
 							icon={<HugeiconsIcon icon={ViewIcon} />}
@@ -864,8 +867,8 @@ function TimelineTrackRows({
 							}}
 						>
 							{canTrackBeHidden(track) && track.hidden
-								? "Show track"
-								: "Hide track"}
+								? t("Show track")
+								: t("Hide track")}
 						</ContextMenuItem>
 						{track.id !== mainTrackId && (
 							<ContextMenuItem
@@ -876,7 +879,7 @@ function TimelineTrackRows({
 								}}
 								variant="destructive"
 							>
-								Delete track
+								{t("Delete track")}
 							</ContextMenuItem>
 						)}
 					</ContextMenuContent>

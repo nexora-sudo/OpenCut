@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditor } from "@/editor/use-editor";
@@ -13,6 +14,8 @@ import {
 } from "./session";
 
 export function useGraphEditorController() {
+	const t = useT();
+
 	const editor = useEditor();
 	const renderTracks = useEditor(
 		(currentEditor) =>
@@ -168,7 +171,7 @@ export function useGraphEditorController() {
 		open,
 		onOpenChange: handleOpenChange,
 		canOpen: state.status === "ready",
-		tooltip: state.status === "ready" ? "Open graph editor" : state.message,
+		tooltip: state.status === "ready" ? t("Open graph editor") : state.message,
 		state,
 		onActiveComponentKeyChange: handleActiveComponentKeyChange,
 		onPreviewValue: handlePreviewValue,

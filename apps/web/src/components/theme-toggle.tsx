@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
@@ -17,6 +18,8 @@ export function ThemeToggle({
 	iconClassName,
 	onToggle,
 }: ThemeToggleProps) {
+	const t = useT();
+
 	const { theme, setTheme } = useTheme();
 
 	return (
@@ -33,7 +36,9 @@ export function ThemeToggle({
 				icon={Sun03Icon}
 				className={cn("!size-[1.1rem]", iconClassName)}
 			/>
-			<span className="sr-only">{theme === "dark" ? "Light" : "Dark"}</span>
+			<span className="sr-only">
+				{theme === "dark" ? t("Light") : t("Dark")}
+			</span>
 		</Button>
 	);
 }

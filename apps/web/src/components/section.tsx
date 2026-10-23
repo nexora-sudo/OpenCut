@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { createContext, useContext, useEffect, useState } from "react";
 import { cn } from "@/utils/ui";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -97,6 +98,8 @@ export function SectionHeader({
 	onClick,
 	className,
 }: SectionHeaderProps) {
+	const t = useT();
+
 	const ctx = useSectionContext();
 	const isCollapsible = ctx?.collapsible ?? false;
 	const isOpen = ctx?.isOpen ?? true;
@@ -123,7 +126,7 @@ export function SectionHeader({
 					<Button
 						variant="ghost"
 						size="icon"
-						aria-label={isOpen ? "Collapse section" : "Expand section"}
+						aria-label={isOpen ? t("Collapse section") : t("Expand section")}
 						onClick={handleClick}
 					>
 						{chevronIcon}
@@ -216,11 +219,13 @@ export function SectionField({
 	children: React.ReactNode;
 	className?: string;
 }) {
+	const t = useT();
+
 	return (
 		<div className={cn("flex flex-col gap-2", className)}>
 			<div className="flex h-4 items-center gap-1.5">
 				{beforeLabel}
-				<Label>{label}</Label>
+				<Label>{t(label)}</Label>
 			</div>
 			{children}
 		</div>

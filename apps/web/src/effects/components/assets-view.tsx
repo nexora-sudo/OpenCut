@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useEffect, useRef, useCallback } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -10,10 +11,12 @@ import { buildEffectElement } from "@/timeline/element-utils";
 import type { EffectDefinition } from "@/effects/types";
 
 export function EffectsView() {
+	const t = useT();
+
 	const effects = effectsRegistry.getAll();
 
 	return (
-		<PanelView title="Effects">
+		<PanelView title={t("Effects")}>
 			<EffectsGrid effects={effects} />
 		</PanelView>
 	);
@@ -54,6 +57,8 @@ function EffectPreviewCanvas({ effectType }: { effectType: string }) {
 }
 
 function EffectItem({ effect }: { effect: EffectDefinition }) {
+	const t = useT();
+
 	const editor = useEditor();
 
 	const handleAddToTimeline = useCallback(() => {
@@ -73,7 +78,7 @@ function EffectItem({ effect }: { effect: EffectDefinition }) {
 
 	return (
 		<DraggableItem
-			name={effect.name}
+			name={t(effect.name)}
 			preview={preview}
 			dragData={{
 				id: effect.type,

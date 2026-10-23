@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -14,6 +15,8 @@ interface MobileGateProps {
 }
 
 export function MobileGate({ children }: MobileGateProps) {
+	const t = useT();
+
 	const router = useRouter();
 	const [show, setShow] = useState<boolean | null>(null);
 
@@ -43,25 +46,25 @@ export function MobileGate({ children }: MobileGateProps) {
 				onClick={handleGoBack}
 			>
 				<HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
-				<span className=" text-sm">Go back</span>
+				<span className=" text-sm">{t("Go back")}</span>
 			</Button>
 
 			<div className="flex flex-1 flex-col justify-center gap-5 px-7">
 				<div className="flex flex-col gap-3">
 					<h1 className="text-foreground text-3xl font-bold tracking-tight">
-						Desktop only (for now)
+						{t("Desktop only (for now)")}
 					</h1>
 					<p className="text-muted-foreground text-sm leading-relaxed">
-						OpenCut isn't optimized for mobile or iPad yet. Things will break
-						and the layout will be a mess. Come back on a desktop for the real
-						experience.
+						{t(
+							"OpenCut isn't optimized for mobile or iPad yet. Things will break and the layout will be a mess. Come back on a desktop for the real experience.",
+						)}
 					</p>
 				</div>
 				<div className="flex items-center gap-3">
-					<Button onClick={handleContinue}>Take a look anyway</Button>
+					<Button onClick={handleContinue}>{t("Take a look anyway")}</Button>
 					<Button variant="ghost" asChild>
 						<Link href="/roadmap" className="flex items-center gap-1">
-							Roadmap
+							{t("Roadmap")}
 							<HugeiconsIcon icon={ArrowRight01Icon} size={14} />
 						</Link>
 					</Button>

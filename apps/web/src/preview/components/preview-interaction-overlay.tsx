@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { useState } from "react";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { usePreviewInteraction } from "@/preview/hooks/use-preview-interaction";
@@ -10,6 +11,8 @@ import { usePropertiesStore } from "@/components/editor/panels/properties/stores
 import { useEditor } from "@/editor/use-editor";
 
 export function PreviewInteractionOverlay() {
+	const t = useT();
+
 	const [snapLines, setSnapLines] = useState<SnapLine[]>([]);
 	const editor = useEditor();
 	const viewport = usePreviewViewport();
@@ -70,7 +73,7 @@ export function PreviewInteractionOverlay() {
 			<div
 				className="absolute inset-0 pointer-events-auto"
 				role="application"
-				aria-label="Preview canvas"
+				aria-label={t("Preview canvas")}
 				style={{
 					cursor: viewport.isPanning
 						? "grabbing"

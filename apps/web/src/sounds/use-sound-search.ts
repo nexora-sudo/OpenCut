@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { useEffect } from "react";
 import { useSoundsStore } from "@/sounds/sounds-store";
 
@@ -8,6 +9,8 @@ export function useSoundSearch({
 	query: string;
 	commercialOnly: boolean;
 }) {
+	const t = useT();
+
 	const {
 		searchResults,
 		isSearching,
@@ -64,11 +67,13 @@ export function useSoundSearch({
 				setHasNextPage({ hasNext: !!data.next });
 				setTotalCount(data.count);
 			} else {
-				setSearchError({ error: `Load more failed: ${response.status}` });
+				setSearchError({
+					error: t("Load more failed: {v0}", { v0: response.status }),
+				});
 			}
 		} catch (err) {
 			setSearchError({
-				error: err instanceof Error ? err.message : "Load more failed",
+				error: err instanceof Error ? err.message : t("Load more failed"),
 			});
 		} finally {
 			setLoadingMore({ loading: false });
@@ -108,13 +113,15 @@ export function useSoundSearch({
 						setTotalCount({ count: data.count });
 						setCurrentPage({ page: 1 });
 					} else {
-						setSearchError({ error: `Search failed: ${response.status}` });
+						setSearchError({
+							error: t("Search failed: {v0}", { v0: response.status }),
+						});
 					}
 				}
 			} catch (err) {
 				if (!ignore) {
 					setSearchError({
-						error: err instanceof Error ? err.message : "Search failed",
+						error: err instanceof Error ? err.message : t("Search failed"),
 					});
 				}
 			} finally {
@@ -129,6 +136,7 @@ export function useSoundSearch({
 			ignore = true;
 		};
 	}, [
+		t,
 		query,
 		lastSearchQuery,
 		searchResults.length,

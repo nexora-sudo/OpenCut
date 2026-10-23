@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { type JSX } from "react";
 import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import { mediaTimeToSeconds } from "opencut-wasm";
@@ -30,6 +31,8 @@ export function TimelineRuler({
 	handleRulerTrackingMouseDown,
 	handleRulerMouseDown,
 }: TimelineRulerProps) {
+	const t = useT();
+
 	const durationTicks = useEditor((e) => e.timeline.getTotalDuration());
 	const durationSeconds = mediaTimeToSeconds({ time: durationTicks });
 	const pixelsPerSecond = BASE_TIMELINE_PIXELS_PER_SECOND * zoomLevel;
@@ -101,7 +104,7 @@ export function TimelineRuler({
 		<div
 			role="slider"
 			tabIndex={0}
-			aria-label="Timeline ruler"
+			aria-label={t("Timeline ruler")}
 			aria-valuemin={0}
 			aria-valuemax={effectiveDurationSeconds}
 			aria-valuenow={0}

@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 import { withBotId } from "botid/next/config";
 import { withContentCollections } from "@content-collections/next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
+	devIndicators: false,
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
@@ -51,4 +53,5 @@ const nextConfig: NextConfig = {
 	},
 };
 
-export default withContentCollections(withBotId(nextConfig));
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+export default withContentCollections(withNextIntl(withBotId(nextConfig)));

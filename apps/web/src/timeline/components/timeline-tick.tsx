@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import type { FrameRate } from "opencut-wasm";
 import { timelineTimeToSnappedPixels } from "@/timeline";
@@ -19,6 +20,8 @@ export function TimelineTick({
 	fps,
 	showLabel,
 }: TimelineTickProps) {
+	const t = useT();
+
 	const leftPosition = timelineTimeToSnappedPixels({ time, zoomLevel });
 
 	if (showLabel) {
@@ -28,7 +31,7 @@ export function TimelineTick({
 				className="text-muted-foreground/85 absolute top-1 select-none text-[10px] leading-none"
 				style={{ left: `${leftPosition}px` }}
 			>
-				{label}
+				{t(label)}
 			</span>
 		);
 	}

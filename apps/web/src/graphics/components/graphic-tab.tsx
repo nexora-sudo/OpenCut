@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useRef } from "react";
 import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
@@ -8,7 +9,11 @@ import {
 } from "@/components/editor/panels/properties/hooks/use-keyframed-param-property";
 import type { ParamDefinition, ParamValues } from "@/params";
 import type { GraphicElement } from "@/timeline";
-import { graphicsRegistry, registerDefaultGraphics, resolveGraphicElementParamsAtTime } from "@/graphics";
+import {
+	graphicsRegistry,
+	registerDefaultGraphics,
+	resolveGraphicElementParamsAtTime,
+} from "@/graphics";
 import { useElementPreview } from "@/timeline/hooks/use-element-preview";
 import { useEditor } from "@/editor/use-editor";
 import {
@@ -36,6 +41,8 @@ export function GraphicTab({
 	element: GraphicElement;
 	trackId: string;
 }) {
+	const t = useT();
+
 	const definition = graphicsRegistry.get(element.definitionId);
 	const { localTime, isPlayheadWithinElementRange } = useElementPlayhead({
 		startTime: element.startTime,
@@ -60,7 +67,7 @@ export function GraphicTab({
 		<div className="flex flex-col">
 			<Section collapsible sectionKey={`${element.id}:graphic`}>
 				<SectionHeader>
-					<SectionTitle>{definition.name}</SectionTitle>
+					<SectionTitle>{t(definition.name)}</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
@@ -90,6 +97,8 @@ function StrokeSection({
 	element: GraphicElement;
 	trackId: string;
 }) {
+	const t = useT();
+
 	const editor = useEditor();
 	const definition = graphicsRegistry.get(element.definitionId);
 	const { localTime, isPlayheadWithinElementRange } = useElementPlayhead({
@@ -166,7 +175,7 @@ function StrokeSection({
 					</Button>
 				}
 			>
-				<SectionTitle>Stroke</SectionTitle>
+				<SectionTitle>{t("Stroke")}</SectionTitle>
 			</SectionHeader>
 			<SectionContent
 				className={cn(!isStrokeEnabled && "pointer-events-none opacity-50")}

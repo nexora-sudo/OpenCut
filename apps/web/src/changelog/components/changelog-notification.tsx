@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -11,6 +12,8 @@ import type { Release } from "../utils";
 const STORAGE_KEY = "last-seen-version";
 
 export function ChangelogNotification() {
+	const t = useT();
+
 	const [release, setRelease] = useState<Release | null>(null);
 
 	useEffect(() => {
@@ -52,7 +55,7 @@ export function ChangelogNotification() {
 			<div className="flex items-start justify-between gap-2">
 				<div className="flex flex-col gap-1">
 					<span className="text-sm font-semibold leading-snug">
-						{release.title}
+						{t(release.title)}
 					</span>
 					<span className="text-xs text-muted-foreground">
 						v{release.version}
@@ -63,7 +66,7 @@ export function ChangelogNotification() {
 					size="icon"
 					className="-mr-1 -mt-1 shrink-0"
 					onClick={() => setRelease(null)}
-					aria-label="Dismiss"
+					aria-label={t("Dismiss")}
 				>
 					<HugeiconsIcon icon={Cancel01Icon} className="size-4" />
 				</Button>
@@ -71,14 +74,14 @@ export function ChangelogNotification() {
 
 			{release.summary && (
 				<p className="text-xs leading-relaxed text-muted-foreground">
-					{release.summary}
+					{t(release.summary)}
 				</p>
 			)}
 
 			<div className="flex justify-end">
 				<Button asChild size="sm">
 					<Link href="/changelog" onClick={() => setRelease(null)}>
-						See full changelog
+						{t("See full changelog")}
 					</Link>
 				</Button>
 			</div>

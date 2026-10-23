@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useParams } from "next/navigation";
 import {
@@ -58,19 +59,21 @@ export default function Editor() {
 }
 
 function DegradedRendererBanner() {
+	const t = useT();
+
 	const isDegraded = useEditor((e) => e.renderer.isDegraded);
 	const [dismissed, setDismissed] = useState(false);
 	if (!isDegraded || dismissed) return null;
 
 	return (
 		<div className="bg-accent border-b h-9 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-			<span>For the best experience, open OpenCut in Chrome.</span>
+			<span>{t("For the best experience, open OpenCut in Chrome.")}</span>
 			<Button
 				variant="text"
 				size="icon"
 				className="p-0 w-auto [&_svg]:size-3.5"
 				onClick={() => setDismissed(true)}
-				aria-label="Dismiss"
+				aria-label={t("Dismiss")}
 			>
 				<HugeiconsIcon icon={Cancel01Icon} />
 			</Button>

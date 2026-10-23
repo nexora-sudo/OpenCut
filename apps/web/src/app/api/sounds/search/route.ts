@@ -1,3 +1,4 @@
+import { getT } from "@/i18n/server";
 import { webEnv } from "@/env/web";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -148,10 +149,15 @@ function transformFreesoundResult(
 }
 
 export async function GET(request: NextRequest) {
+	const t = await getT();
+
 	try {
 		const { limited } = await checkRateLimit({ request });
 		if (limited) {
-			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+			return NextResponse.json(
+				{ error: t("Too many requests") },
+				{ status: 429 },
+			);
 		}
 
 		const { searchParams } = new URL(request.url);
@@ -168,7 +174,7 @@ export async function GET(request: NextRequest) {
 		if (!validationResult.success) {
 			return NextResponse.json(
 				{
-					error: "Invalid parameters",
+					error: t("Invalid parameters"),
 					details: validationResult.error.flatten().fieldErrors,
 				},
 				{ status: 400 },
@@ -188,9 +194,10 @@ export async function GET(request: NextRequest) {
 		if (type === "songs") {
 			return NextResponse.json(
 				{
-					error: "Songs are not available yet",
-					message:
+					error: t("Songs are not available yet"),
+					message: t(
 						"Song search functionality is coming soon. Try searching for sound effects instead.",
+					),
 				},
 				{ status: 501 },
 			);
@@ -221,7 +228,7 @@ export async function GET(request: NextRequest) {
 			const errorText = await response.text();
 			console.error("Freesound API error:", response.status, errorText);
 			return NextResponse.json(
-				{ error: "Failed to search sounds" },
+				{ error: t("Failed to search sounds") },
 				{ status: response.status },
 			);
 		}
@@ -235,7 +242,7 @@ export async function GET(request: NextRequest) {
 				freesoundValidation.error,
 			);
 			return NextResponse.json(
-				{ error: "Invalid response from Freesound API" },
+				{ error: t("Invalid response from Freesound API") },
 				{ status: 502 },
 			);
 		}
@@ -264,7 +271,7 @@ export async function GET(request: NextRequest) {
 				responseValidation.error,
 			);
 			return NextResponse.json(
-				{ error: "Internal response formatting error" },
+				{ error: t("Internal response formatting error") },
 				{ status: 500 },
 			);
 		}
@@ -273,7 +280,7 @@ export async function GET(request: NextRequest) {
 	} catch (error) {
 		console.error("Error searching sounds:", error);
 		return NextResponse.json(
-			{ error: "Internal server error" },
+			{ error: t("Internal server error") },
 			{ status: 500 },
 		);
 	}

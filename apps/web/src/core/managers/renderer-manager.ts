@@ -1,3 +1,4 @@
+import { translate } from "@/i18n/translate";
 import type { EditorCore } from "@/core";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import type { ExportOptions, ExportResult } from "@/export";
@@ -73,7 +74,8 @@ export class RendererManager {
 			console.error("Copy snapshot failed:", error);
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : "Unknown error",
+				error:
+					error instanceof Error ? error.message : translate("Unknown error"),
 			};
 		}
 	}
@@ -122,7 +124,10 @@ export class RendererManager {
 				return { success: false, error: "Failed to create image" };
 			}
 
-			const timecode = formatTimecode({ time: renderTime, rate: fps })!.replace(/:/g, "-");
+			const timecode = formatTimecode({ time: renderTime, rate: fps })!.replace(
+				/:/g,
+				"-",
+			);
 			const safeName =
 				activeProject.metadata.name.replace(/[<>:"/\\|?*]/g, "-").trim() ||
 				"snapshot";
@@ -133,7 +138,8 @@ export class RendererManager {
 			console.error("Snapshot capture failed:", error);
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : "Unknown error",
+				error:
+					error instanceof Error ? error.message : translate("Unknown error"),
 			};
 		}
 	}
@@ -234,7 +240,10 @@ export class RendererManager {
 			console.error("Export failed:", error);
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : "Unknown export error",
+				error:
+					error instanceof Error
+						? error.message
+						: translate("Unknown export error"),
 			};
 		}
 	}

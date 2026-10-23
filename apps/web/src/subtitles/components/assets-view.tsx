@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { Button } from "@/components/ui/button";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import {
@@ -84,6 +85,8 @@ function processingReducer(
 /* eslint-enable opencut/prefer-object-params */
 
 export function Captions() {
+	const t = useT();
+
 	const [selectedLanguage, setSelectedLanguage] =
 		useState<TranscriptionLanguage>("auto");
 	const [processing, dispatch] = useReducer(processingReducer, IDLE_STATE);
@@ -101,10 +104,10 @@ export function Captions() {
 		if (progress.status === "loading-model") {
 			dispatch({
 				type: "update_step",
-				step: `Loading model ${Math.round(progress.progress)}%`,
+				step: t("Loading model {v0}%", { v0: Math.round(progress.progress) }),
 			});
 		} else if (progress.status === "transcribing") {
-			dispatch({ type: "update_step", step: "Transcribing..." });
+			dispatch({ type: "update_step", step: t("Transcribing...") });
 		}
 	};
 
@@ -142,7 +145,7 @@ export function Captions() {
 			const captionChunks = buildCaptionChunks({ segments: result.segments });
 
 			if (!insertCaptions({ captions: captionChunks })) {
-				dispatch({ type: "fail", error: "No captions were generated" });
+				dispatch({ type: "fail", error: t("No captions were generated") });
 				return;
 			}
 
@@ -154,7 +157,7 @@ export function Captions() {
 				error:
 					error instanceof Error
 						? error.message
-						: "An unexpected error occurred",
+						: t("An unexpected error occurred"),
 			});
 		}
 	};
@@ -175,7 +178,7 @@ export function Captions() {
 			if (result.captions.length === 0) {
 				dispatch({
 					type: "fail",
-					error: "No valid subtitle cues were found in the subtitle file",
+					error: t("No valid subtitle cues were found in the subtitle file"),
 				});
 				return;
 			}
@@ -183,7 +186,7 @@ export function Captions() {
 			dispatch({ type: "update_step", step: "Importing subtitles..." });
 
 			if (!insertCaptions({ captions: result.captions })) {
-				dispatch({ type: "fail", error: "No captions were generated" });
+				dispatch({ type: "fail", error: t("No captions were generated") });
 				return;
 			}
 
@@ -202,7 +205,7 @@ export function Captions() {
 				error:
 					error instanceof Error
 						? error.message
-						: "An unexpected error occurred",
+						: t("An unexpected error occurred"),
 			});
 		}
 	};
@@ -239,7 +242,7 @@ export function Captions() {
 
 	return (
 		<PanelView
-			title="Captions"
+			title={t("Captions")}
 			contentClassName="px-0 flex flex-col h-full"
 			actions={
 				<TooltipProvider>
@@ -251,12 +254,12 @@ export function Captions() {
 										<Button
 											variant={DIAGNOSTIC_BUTTON_VARIANT[diagnostic.severity]}
 											size="icon"
-											aria-label={diagnostic.message}
+											aria-label={t(diagnostic.message)}
 										>
 											<HugeiconsIcon icon={AlertCircleIcon} size={16} />
 										</Button>
 									</TooltipTrigger>
-									<TooltipContent>{diagnostic.message}</TooltipContent>
+									<TooltipContent>{t(diagnostic.message)}</TooltipContent>
 								</Tooltip>
 							))}
 						<Button
@@ -268,7 +271,7 @@ export function Captions() {
 							className="items-center justify-center gap-1.5"
 						>
 							<HugeiconsIcon icon={CloudUploadIcon} />
-							Import
+							{t("Import")}
 						</Button>
 					</div>
 				</TooltipProvider>
@@ -289,19 +292,19 @@ export function Captions() {
 			>
 				<SectionContent className="flex flex-col gap-4 h-full pt-1">
 					<SectionFields>
-						<SectionField label="Language">
+						<SectionField label={t("Language")}>
 							<Select
 								value={selectedLanguage}
 								onValueChange={(value) => handleLanguageChange({ value })}
 							>
 								<SelectTrigger>
-									<SelectValue placeholder="Select a language" />
+									<SelectValue placeholder={t("Select a language")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="auto">Auto detect</SelectItem>
+									<SelectItem value="auto">{t("Auto detect")}</SelectItem>
 									{TRANSCRIPTION_LANGUAGES.map((language) => (
 										<SelectItem key={language.code} value={language.code}>
-											{language.name}
+											{t(language.name)}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -316,11 +319,11 @@ export function Captions() {
 						disabled={isProcessing || activeDiagnostics.length > 0}
 					>
 						{isProcessing && <Spinner className="mr-1" />}
-						{isProcessing ? processing.step : "Generate transcript"}
+						{isProcessing ? t(processing.step) : t("Generate transcript")}
 					</Button>
 					{error && (
 						<div className="bg-destructive/10 border-destructive/20 rounded-md border p-3">
-							<p className="text-destructive text-sm">{error}</p>
+							<p className="text-destructive text-sm">{t(error)}</p>
 						</div>
 					)}
 					{warnings.length > 0 && (

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import Image from "next/image";
 import type { CSSProperties } from "react";
@@ -26,12 +27,12 @@ import type {
 } from "@/stickers";
 import { useStickersStore } from "@/stickers/stickers-store";
 import { cn } from "@/utils/ui";
-import {
-	HappyIcon,
-} from "@hugeicons/core-free-icons";
+import { HappyIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 export function StickersView() {
+	const t = useT();
+
 	const {
 		browseContent,
 		browseStickers,
@@ -55,7 +56,7 @@ export function StickersView() {
 				<Input
 					size="sm"
 					variant="default"
-					placeholder="Search..."
+					placeholder={t("Search...")}
 					value={searchQuery}
 					onChange={(e) => {
 						setSearchQuery({ query: e.target.value });
@@ -79,10 +80,10 @@ export function StickersView() {
 				variant="underline"
 				className="mt-2 flex min-h-0 flex-1 flex-col"
 			>
-				<TabsList aria-label="Sticker categories">
+				<TabsList aria-label={t("Sticker categories")}>
 					{Object.entries(STICKER_CATEGORIES).map(([key, label]) => (
 						<TabsTrigger key={key} value={key}>
-							{label}
+							{t(label)}
 						</TabsTrigger>
 					))}
 				</TabsList>
@@ -134,6 +135,8 @@ function StickerRow({ items }: { items: StickerData[] }) {
 }
 
 function EmptyView({ message }: { message: string }) {
+	const t = useT();
+
 	return (
 		<div className="bg-background flex h-full flex-col items-center justify-center gap-3 p-4">
 			<HugeiconsIcon
@@ -141,14 +144,18 @@ function EmptyView({ message }: { message: string }) {
 				className="text-muted-foreground size-10"
 			/>
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-lg font-medium">No stickers found</p>
-				<p className="text-muted-foreground text-sm text-balance">{message}</p>
+				<p className="text-lg font-medium">{t("No stickers found")}</p>
+				<p className="text-muted-foreground text-sm text-balance">
+					{t(message)}
+				</p>
 			</div>
 		</div>
 	);
 }
 
 function RegionBanner({ region }: { region: string }) {
+	const t = useT();
+
 	return (
 		<div className="flex h-7 items-center gap-1.5 rounded-lg border border-sky-100 bg-sky-50 px-2">
 			<svg
@@ -166,12 +173,14 @@ function RegionBanner({ region }: { region: string }) {
 				<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
 				<circle cx="12" cy="10" r="3" />
 			</svg>
-			<span className="text-xs font-semibold text-sky-600">{region}</span>
+			<span className="text-xs font-semibold text-sky-600">{t(region)}</span>
 		</div>
 	);
 }
 
 function StickersContentView() {
+	const t = useT();
+
 	const {
 		browseContent,
 		clearRecentStickers,
@@ -205,7 +214,7 @@ function StickersContentView() {
 					{isRegionSearch && <RegionBanner region={regionLabel} />}
 					<div className="flex items-center justify-between">
 						<span className="text-muted-foreground text-sm">
-							{searchResults.total} results
+							{searchResults.total} {t("results")}
 						</span>
 					</div>
 					<StickerGrid items={searchResults.items} />
@@ -215,7 +224,11 @@ function StickersContentView() {
 
 		// "all" tab search — sections are in browseContent, fall through to section rendering below
 		if (selectedCategory !== "all" && searchQuery) {
-			return <EmptyView message={`No stickers found for "${searchQuery}"`} />;
+			return (
+				<EmptyView
+					message={t('No stickers found for "{v0}"', { v0: searchQuery })}
+				/>
+			);
 		}
 	}
 
@@ -233,10 +246,12 @@ function StickersContentView() {
 			<EmptyView
 				message={
 					viewMode === "search"
-						? `No stickers found for "${searchQuery}"`
+						? t('No stickers found for "{v0}"', { v0: searchQuery })
 						: selectedCategory === "all"
-							? "No stickers available yet."
-							: `No stickers available in ${categoryLabel.toLowerCase()} yet.`
+							? t("No stickers available yet.")
+							: t("No stickers available in {v0} yet.", {
+									v0: t(categoryLabel).toLowerCase(),
+								})
 				}
 			/>
 		);
@@ -267,6 +282,8 @@ function StickerSection({
 	onClearRecent: () => void;
 	onSeeAll: (category: StickerCategory) => void;
 }) {
+	const t = useT();
+
 	const hasHeader =
 		Boolean(section.title) || section.id === "recent" || section.action;
 
@@ -275,7 +292,7 @@ function StickerSection({
 			{hasHeader && (
 				<div className="flex items-center justify-between gap-2">
 					{section.title ? (
-						<p className="text-xs text-muted-foreground">{section.title}</p>
+						<p className="text-xs text-muted-foreground">{t(section.title)}</p>
 					) : (
 						<div />
 					)}
@@ -288,7 +305,7 @@ function StickerSection({
 								size="sm"
 								className="h-auto gap-1 p-0 text-xs text-muted-foreground"
 							>
-								Clear
+								{t("Clear")}
 							</Button>
 						)}
 
@@ -301,7 +318,7 @@ function StickerSection({
 									onSeeAll(section.action?.category as StickerCategory);
 								}}
 							>
-								See all
+								{t("See all")}
 							</Button>
 						)}
 					</div>
@@ -328,6 +345,8 @@ function StickerItem({
 	shouldCapSize = false,
 	containerClassName,
 }: StickerItemProps) {
+	const t = useT();
+
 	const editor = useEditor();
 	const { addToRecentStickers } = useStickersStore();
 	const [isAdding, setIsAdding] = useState(false);
@@ -341,9 +360,11 @@ function StickerItem({
 		setHasImageError(false);
 	}, [item.id]);
 
-	const displayName = item.name;
+	const displayName = t(item.name);
 	const shapePreset =
-		item.provider === "shapes" ? parseShapeStickerId({ stickerId: item.id }) : null;
+		item.provider === "shapes"
+			? parseShapeStickerId({ stickerId: item.id })
+			: null;
 
 	const handleAdd = async () => {
 		setIsAdding(true);
@@ -380,7 +401,7 @@ function StickerItem({
 			addToRecentStickers({ stickerId: item.id });
 		} catch (error) {
 			console.error("Failed to add sticker:", error);
-			toast.error("Failed to add sticker to timeline");
+			toast.error(t("Failed to add sticker to timeline"));
 		} finally {
 			setIsAdding(false);
 		}

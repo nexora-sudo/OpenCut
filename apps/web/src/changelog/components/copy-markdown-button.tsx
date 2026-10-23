@@ -1,4 +1,6 @@
 "use client";
+import { useT } from "@/i18n/use-t";
+import { translate } from "@/i18n/translate";
 
 import { useState } from "react";
 import { CheckIcon, ClipboardIcon } from "lucide-react";
@@ -38,9 +40,9 @@ function buildMarkdown({
 			continue;
 		}
 
-		lines.push(`## ${getSectionTitle({ type })}`);
+		lines.push(`## ${translate(getSectionTitle({ type }))}`);
 		for (const change of grouped[type]) {
-			lines.push(`- ${change.text}`);
+			lines.push(`- ${translate(change.text)}`);
 		}
 		lines.push("");
 	}
@@ -55,9 +57,11 @@ function buildCollapsibleMarkdownSection({
 	title: string;
 	changes: Change[];
 }): string {
-	const bulletLines = changes.map((change) => `- ${change.text}`).join("\n");
+	const bulletLines = changes
+		.map((change) => `- ${translate(change.text)}`)
+		.join("\n");
 
-	return `<details>\n<summary>${title}</summary>\n\n${bulletLines}\n\n</details>`;
+	return `<details>\n<summary>${translate(title)}</summary>\n\n${bulletLines}\n\n</details>`;
 }
 
 export function CopyMarkdownButton({
@@ -67,6 +71,8 @@ export function CopyMarkdownButton({
 	description?: string;
 	changes: Change[];
 }) {
+	const t = useT();
+
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = async () => {
@@ -85,14 +91,14 @@ export function CopyMarkdownButton({
 				"flex items-center gap-1.5",
 				copied && "pointer-events-none",
 			)}
-			title="Copy as markdown"
+			title={t("Copy as markdown")}
 		>
 			{copied ? (
 				<CheckIcon className="size-4" />
 			) : (
 				<ClipboardIcon className="size-4" />
 			)}
-			{copied ? "Copied!" : "Copy markdown"}
+			{copied ? t("Copied!") : t("Copy markdown")}
 		</Button>
 	);
 }

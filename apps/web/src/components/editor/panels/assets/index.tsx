@@ -1,7 +1,11 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { Separator } from "@/components/ui/separator";
-import { type Tab, useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
+import {
+	type Tab,
+	useAssetsPanelStore,
+} from "@/components/editor/panels/assets/assets-panel-store";
 import { TabBar } from "./tabbar";
 import { Captions } from "@/subtitles/components/assets-view";
 import { MediaView } from "./views/assets";
@@ -12,6 +16,8 @@ import { TextView } from "@/text/components/assets-view";
 import { EffectsView } from "@/effects/components/assets-view";
 
 export function AssetsPanel() {
+	const t = useT();
+
 	const { activeTab } = useAssetsPanelStore();
 
 	const viewMap: Record<Tab, React.ReactNode> = {
@@ -22,13 +28,13 @@ export function AssetsPanel() {
 		effects: <EffectsView />,
 		transitions: (
 			<div className="text-muted-foreground p-4">
-				Transitions view coming soon...
+				{t("Transitions view coming soon...")}
 			</div>
 		),
 		captions: <Captions />,
 		adjustment: (
 			<div className="text-muted-foreground p-4">
-				Adjustment view coming soon...
+				{t("Adjustment view coming soon...")}
 			</div>
 		),
 		settings: <SettingsView />,

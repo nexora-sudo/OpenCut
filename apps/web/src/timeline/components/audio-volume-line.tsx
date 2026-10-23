@@ -1,12 +1,10 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useCallback, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useEditor } from "@/editor/use-editor";
-import {
-	getDbFromLinePos,
-	getLinePosFromDb,
-} from "@/timeline/audio-display";
+import { getDbFromLinePos, getLinePosFromDb } from "@/timeline/audio-display";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/timeline/audio-constants";
 import { getElementVolume, hasAnimatedVolume } from "@/timeline/audio-state";
 import type { AudioElement } from "@/timeline/types";
@@ -56,6 +54,8 @@ export function AudioVolumeLine({
 	element: AudioElement;
 	trackId: string;
 }) {
+	const t = useT();
+
 	const editor = useEditor();
 	const surfaceRef = useRef<HTMLDivElement>(null);
 	const activePointerIdRef = useRef<number | null>(null);
@@ -250,7 +250,7 @@ export function AudioVolumeLine({
 					onPointerUp={handlePointerUp}
 					onPointerCancel={handlePointerCancel}
 					onLostPointerCapture={handleLostPointerCapture}
-					title="Drag to adjust clip volume"
+					title={t("Drag to adjust clip volume")}
 				/>
 				{isDragging &&
 					tooltipClientPos &&

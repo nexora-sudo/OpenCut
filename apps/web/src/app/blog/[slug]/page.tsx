@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -81,27 +82,34 @@ export default async function BlogPostPage({ params }: PageProps) {
 }
 
 function PostHeader({ post }: { post: Post }) {
-	const formattedDate = new Date(post.publishedAt).toLocaleDateString("en-US", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
+	const t = useT();
+
+	const formattedDate = new Date(post.publishedAt).toLocaleDateString(
+		t.locale,
+		{
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		},
+	);
 
 	return (
 		<div className="flex flex-col items-center justify-center gap-8">
 			<PostMeta date={formattedDate} publishedAt={post.publishedAt} />
-			<PostTitle title={post.title} />
+			<PostTitle title={t(post.title)} />
 			{post.coverImage && <PostCoverImage post={post} />}
 		</div>
 	);
 }
 
 function PostCoverImage({ post }: { post: Post }) {
+	const t = useT();
+
 	return (
 		<div className="relative aspect-video overflow-hidden rounded-lg w-full mt-4">
 			<Image
 				src={post.coverImage}
-				alt={post.title}
+				alt={t(post.title)}
 				loading="eager"
 				fill
 				className="rounded-lg object-cover"
@@ -119,9 +127,11 @@ function PostMeta({ date, publishedAt }: { date: string; publishedAt: Date }) {
 }
 
 function PostTitle({ title }: { title: string }) {
+	const t = useT();
+
 	return (
 		<h1 className="text-5xl font-bold tracking-tight md:text-4xl text-center">
-			{title}
+			{t(title)}
 		</h1>
 	);
 }

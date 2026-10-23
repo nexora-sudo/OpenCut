@@ -6,6 +6,7 @@ import type {
 	StickerSearchResult,
 } from "../types";
 import { REGIONS, REGION_GROUPS } from "./countries-data";
+import { translate } from "@/i18n/translate";
 import type { CountryRecord, RegionId } from "./countries-data";
 
 const FLAGS_PROVIDER_ID = "flags";
@@ -69,6 +70,7 @@ function findMatchingRegions({
 	return REGIONS.filter(
 		(r) =>
 			r.id.toLowerCase() === query ||
+			translate(r.id).toLocaleLowerCase().includes(query) ||
 			r.aliases.some((alias) => alias === query),
 	);
 }
@@ -113,13 +115,20 @@ function filterCountriesByQuery({
 	const regionIds = resolveQueryToRegions({ query });
 
 	if (regionIds) {
-		return countries.filter((country) => country.region && regionIds.has(country.region));
+		return countries.filter(
+			(country) => country.region && regionIds.has(country.region),
+		);
 	}
 
 	return countries.filter((country) => {
 		const normalizedName = country.name.toLowerCase();
+		const localizedName = translate(country.name).toLocaleLowerCase();
 		const normalizedCode = country.code.toLowerCase();
-		return normalizedName.includes(query) || normalizedCode.includes(query);
+		return (
+			normalizedName.includes(query) ||
+			localizedName.includes(query) ||
+			normalizedCode.includes(query)
+		);
 	});
 }
 

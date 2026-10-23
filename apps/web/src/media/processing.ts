@@ -1,3 +1,4 @@
+import { translate } from "@/i18n/translate";
 import { toast } from "sonner";
 import { getMediaTypeFromFile } from "@/media/media-utils";
 import { formatStorageBytes } from "@/services/storage/quota";
@@ -14,11 +15,19 @@ const getUnsupportedVideoDescription = ({
 }: {
 	codec: VideoFileData["codec"];
 }): string => {
-	const codecLabel = codec ? codec.toUpperCase() : "this video codec";
+	const codecLabel = codec
+		? codec.toUpperCase()
+		: translate("this video codec");
 
 	return codec === "hevc"
-		? `${codecLabel} cannot be decoded in this browser, so this clip may not preview correctly. Convert it to H.264 MP4 or try importing it in Safari.`
-		: `${codecLabel} cannot be decoded in this browser, so this clip may not preview correctly. Convert it to H.264 MP4 and reimport it.`;
+		? translate(
+				"{v0} cannot be decoded in this browser, so this clip may not preview correctly. Convert it to H.264 MP4 or try importing it in Safari.",
+				{ v0: codecLabel },
+			)
+		: translate(
+				"{v0} cannot be decoded in this browser, so this clip may not preview correctly. Convert it to H.264 MP4 and reimport it.",
+				{ v0: codecLabel },
+			);
 };
 
 const getStorageLimitDescription = ({
@@ -99,7 +108,7 @@ export async function processMediaAssets({
 		const fileType = getMediaTypeFromFile({ file });
 
 		if (!fileType) {
-			toast.error(`Unsupported file type: ${file.name}`);
+			toast.error(translate("Unsupported file type: {v0}", { v0: file.name }));
 			continue;
 		}
 
@@ -108,12 +117,15 @@ export async function processMediaAssets({
 		});
 
 		if (!storageCheck.canStore) {
-			toast.error(`Not enough browser storage for ${file.name}`, {
-				description: getStorageLimitDescription({
-					fileSize: file.size,
-					availableBytes: storageCheck.availableBytes,
-				}),
-			});
+			toast.error(
+				translate("Not enough browser storage for {v0}", { v0: file.name }),
+				{
+					description: getStorageLimitDescription({
+						fileSize: file.size,
+						availableBytes: storageCheck.availableBytes,
+					}),
+				},
+			);
 			continue;
 		}
 
@@ -144,7 +156,7 @@ export async function processMediaAssets({
 					thumbnailUrl = videoData.thumbnailUrl ?? undefined;
 
 					if (!videoData.canDecode) {
-						toast.error(`Can't preview ${file.name}`, {
+						toast.error(translate("Can't preview {v0}", { v0: file.name }), {
 							description: getUnsupportedVideoDescription({
 								codec: videoData.codec,
 							}),
@@ -154,9 +166,9 @@ export async function processMediaAssets({
 					const message =
 						error instanceof Error
 							? error.message
-							: "Could not process video";
+							: translate("Could not process video");
 
-					toast.error(`Couldn't process ${file.name}`, {
+					toast.error(translate("Couldn't process {v0}", { v0: file.name }), {
 						description: message,
 					});
 				}
@@ -186,7 +198,7 @@ export async function processMediaAssets({
 			}
 		} catch (error) {
 			console.error("Error processing file:", file.name, error);
-			toast.error(`Failed to process ${file.name}`);
+			toast.error(translate("Failed to process {v0}", { v0: file.name }));
 			URL.revokeObjectURL(url);
 		}
 	}

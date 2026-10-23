@@ -1,3 +1,4 @@
+import { translate } from "@/i18n/translate";
 import { cloneAnimations } from "@/animation";
 import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
@@ -112,8 +113,8 @@ export function getSourceAudioActionLabel({
 	element: VideoElement;
 }): "Extract audio" | "Recover audio" {
 	return isSourceAudioSeparated({ element })
-		? "Recover audio"
-		: "Extract audio";
+		? translate("Recover audio")
+		: translate("Extract audio");
 }
 
 function cloneVolumeAnimations({

@@ -1,3 +1,4 @@
+import { getT } from "@/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -20,16 +21,22 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const t = await getT();
 	const { version } = await params;
 	const release = getReleaseByVersion({ version });
 	if (!release) return {};
 	return {
-		title: `${release.title} (${release.version}) - OpenCut Changelog`,
-		description: release.description,
+		title: t("{v0} ({v1}) - OpenCut Changelog", {
+			v0: t(release.title),
+			v1: release.version,
+		}),
+		description: t(release.description),
 	};
 }
 
 export default async function ReleaseDetailPage({ params }: Props) {
+	const t = await getT();
+
 	const { version } = await params;
 	const releases = getSortedReleases();
 	const index = releases.findIndex((entry) => entry.version === version);
@@ -46,7 +53,7 @@ export default async function ReleaseDetailPage({ params }: Props) {
 					className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 w-fit"
 				>
 					<ChevronLeftIcon className="size-4" />
-					All releases
+					{t("All releases")}
 				</Link>
 
 				<ReleaseArticle variant="detail">
@@ -54,13 +61,13 @@ export default async function ReleaseDetailPage({ params }: Props) {
 						<div className="flex items-center justify-between">
 							<ReleaseMeta release={release} />
 							<CopyMarkdownButton
-								description={release.description}
+								description={t(release.description)}
 								changes={release.changes}
 							/>
 						</div>
-						<ReleaseTitle as="h1">{release.title}</ReleaseTitle>
+						<ReleaseTitle as="h1">{t(release.title)}</ReleaseTitle>
 						{release.description && (
-							<ReleaseDescription>{release.description}</ReleaseDescription>
+							<ReleaseDescription>{t(release.description)}</ReleaseDescription>
 						)}
 					</div>
 					<ReleaseChanges release={release} />
@@ -74,8 +81,10 @@ export default async function ReleaseDetailPage({ params }: Props) {
 						>
 							<ChevronLeftIcon className="size-4" />
 							<div className="flex flex-col">
-								<span className="text-xs text-muted-foreground/60">Older</span>
-								<span className="font-medium">{older.title}</span>
+								<span className="text-xs text-muted-foreground/60">
+									{t("Older")}
+								</span>
+								<span className="font-medium">{t(older.title)}</span>
 							</div>
 						</Link>
 					) : (
@@ -87,8 +96,10 @@ export default async function ReleaseDetailPage({ params }: Props) {
 							className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground group text-right"
 						>
 							<div className="flex flex-col">
-								<span className="text-xs text-muted-foreground/60">Newer</span>
-								<span className="font-medium">{newer.title}</span>
+								<span className="text-xs text-muted-foreground/60">
+									{t("Newer")}
+								</span>
+								<span className="font-medium">{t(newer.title)}</span>
 							</div>
 							<ChevronRightIcon className="size-4" />
 						</Link>

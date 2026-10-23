@@ -1,3 +1,6 @@
+import { getLocalizedMetadata } from "@/i18n/metadata";
+
+import { useT } from "@/i18n/use-t";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +11,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { LinkSquare02Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/utils/ui";
 
-export const metadata: Metadata = {
+const pageMetadata: Metadata = {
 	title: "Sponsors - OpenCut",
 	description:
 		"Support OpenCut and help us build the future of free and open-source video editing.",
@@ -20,16 +23,23 @@ export const metadata: Metadata = {
 	},
 };
 
+export async function generateMetadata() {
+	return getLocalizedMetadata(pageMetadata);
+}
+
 export default function SponsorsPage() {
+	const t = useT();
+
 	return (
 		<BasePage>
 			<div className="flex flex-col gap-8 text-center">
 				<h1 className="text-5xl font-bold tracking-tight md:text-6xl">
-					Sponsors
+					{t("Sponsors")}
 				</h1>
 				<p className="text-muted-foreground mx-auto max-w-2xl text-xl leading-relaxed text-pretty">
-					Support OpenCut and help us build the future of privacy-first video
-					editing.
+					{t(
+						"Support OpenCut and help us build the future of privacy-first video editing.",
+					)}
 				</p>
 			</div>
 			<SponsorsGrid />
@@ -48,6 +58,8 @@ function SponsorsGrid() {
 }
 
 function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
+	const t = useT();
+
 	return (
 		<Link
 			href={sponsor.url}
@@ -59,7 +71,7 @@ function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
 				<CardContent className="flex h-full flex-col justify-center gap-8 p-8">
 					<Image
 						src={sponsor.logo}
-						alt={`${sponsor.name} logo`}
+						alt={t("{v0} logo", { v0: sponsor.name })}
 						width={50}
 						height={50}
 						className={cn(
@@ -77,7 +89,7 @@ function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
 								className="text-muted-foreground size-4"
 							/>
 						</div>
-						<p className="text-muted-foreground">{sponsor.description}</p>
+						<p className="text-muted-foreground">{t(sponsor.description)}</p>
 					</div>
 				</CardContent>
 			</Card>

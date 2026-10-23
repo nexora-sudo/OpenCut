@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
@@ -9,6 +10,8 @@ import { Button } from "../ui/button";
 import { Dialog, DialogBody, DialogContent, DialogTitle } from "../ui/dialog";
 
 export function Onboarding() {
+	const t = useT();
+
 	const [step, setStep] = useState(0);
 	const [hasSeenOnboarding, setHasSeenOnboarding] = useLocalStorage({
 		key: "hasSeenOnboarding",
@@ -28,13 +31,13 @@ export function Onboarding() {
 	const getStepTitle = () => {
 		switch (step) {
 			case 0:
-				return "Welcome to OpenCut Beta! 🎉";
+				return t("Welcome to OpenCut Beta! 🎉");
 			case 1:
-				return "⚠️ This is a super early beta!";
+				return t("⚠️ This is a super early beta!");
 			case 2:
-				return "🦋 Have fun testing!";
+				return t("🦋 Have fun testing!");
 			default:
-				return "OpenCut Onboarding";
+				return t("OpenCut Onboarding");
 		}
 	};
 
@@ -44,10 +47,14 @@ export function Onboarding() {
 				return (
 					<div className="space-y-5">
 						<div className="space-y-3">
-							<Title title="Welcome to OpenCut Beta! 🎉" />
-							<Description description="You're among the first to try OpenCut - the fully open source CapCut alternative." />
+							<Title title={t("Welcome to OpenCut Beta! 🎉")} />
+							<Description
+								description={t(
+									"You're among the first to try OpenCut - the fully open source CapCut alternative.",
+								)}
+							/>
 						</div>
-						<NextButton onClick={handleNext}>Next</NextButton>
+						<NextButton onClick={handleNext}>{t("Next")}</NextButton>
 					</div>
 				);
 			case 1:
@@ -55,11 +62,23 @@ export function Onboarding() {
 					<div className="space-y-5">
 						<div className="space-y-3">
 							<Title title={getStepTitle()} />
-							<Description description="There's still a ton of things to do to make this editor amazing." />
-							<Description description="A lot of features are still missing. We're working hard to build them out!" />
-							<Description description="If you're curious, check out our roadmap [here](https://opencut.app/roadmap)" />
+							<Description
+								description={t(
+									"There's still a ton of things to do to make this editor amazing.",
+								)}
+							/>
+							<Description
+								description={t(
+									"A lot of features are still missing. We're working hard to build them out!",
+								)}
+							/>
+							<Description
+								description={t(
+									"If you're curious, check out our roadmap [here](https://opencut.app/roadmap)",
+								)}
+							/>
 						</div>
-						<NextButton onClick={handleNext}>Next</NextButton>
+						<NextButton onClick={handleNext}>{t("Next")}</NextButton>
 					</div>
 				);
 			case 2:
@@ -68,10 +87,13 @@ export function Onboarding() {
 						<div className="space-y-3">
 							<Title title={getStepTitle()} />
 							<Description
-								description={`Join our [Discord](${SOCIAL_LINKS.discord}), chat with cool people and share feedback to help make OpenCut the best editor ever.`}
+								description={t(
+									"Join our [Discord]({v0}), chat with cool people and share feedback to help make OpenCut the best editor ever.",
+									{ v0: SOCIAL_LINKS.discord },
+								)}
 							/>
 						</div>
-						<NextButton onClick={handleClose}>Finish</NextButton>
+						<NextButton onClick={handleClose}>{t("Finish")}</NextButton>
 					</div>
 				);
 			default:
@@ -92,10 +114,14 @@ export function Onboarding() {
 }
 
 function Title({ title }: { title: string }) {
-	return <h2 className="text-lg font-bold md:text-xl">{title}</h2>;
+	const t = useT();
+
+	return <h2 className="text-lg font-bold md:text-xl">{t(title)}</h2>;
 }
 
 function Description({ description }: { description: string }) {
+	const t = useT();
+
 	return (
 		<div className="text-muted-foreground">
 			<ReactMarkdown
@@ -113,7 +139,7 @@ function Description({ description }: { description: string }) {
 					),
 				}}
 			>
-				{description}
+				{t(description)}
 			</ReactMarkdown>
 		</div>
 	);

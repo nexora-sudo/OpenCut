@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/utils/ui";
@@ -106,13 +107,15 @@ function ReleaseChangeSection({
 	type: string;
 	changes: Change[];
 }) {
+	const t = useT();
+
 	const title = getSectionTitle({ type });
 
 	if (isSectionCollapsible({ type })) {
 		return (
 			<details className="group flex flex-col gap-1.5">
 				<summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-base font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-					<span>{title}:</span>
+					<span>{t(title)}:</span>
 					<HugeiconsIcon
 						icon={ArrowRightIcon}
 						className="size-3 shrink-0 text-muted-foreground group-open:rotate-90"
@@ -125,7 +128,7 @@ function ReleaseChangeSection({
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<h3 className="text-base font-semibold text-foreground">{title}:</h3>
+			<h3 className="text-base font-semibold text-foreground">{t(title)}:</h3>
 			<ReleaseChangeList changes={changes} />
 		</div>
 	);
@@ -138,6 +141,8 @@ function ReleaseChangeList({
 	changes: Change[];
 	className?: string;
 }) {
+	const t = useT();
+
 	return (
 		<ul className={cn("list-disc space-y-1.5 pl-5", className)}>
 			{changes.map((change) => (
@@ -145,7 +150,7 @@ function ReleaseChangeList({
 					key={change.text}
 					className="text-base leading-relaxed text-foreground"
 				>
-					<ReactMarkdownWrapper inline>{change.text}</ReactMarkdownWrapper>
+					<ReactMarkdownWrapper inline>{t(change.text)}</ReactMarkdownWrapper>
 				</li>
 			))}
 		</ul>

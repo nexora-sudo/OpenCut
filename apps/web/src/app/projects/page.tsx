@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/i18n/use-t";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -67,6 +69,7 @@ import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
 import { cn } from "@/utils/ui";
 import { ChangelogNotification } from "@/changelog/components/changelog-notification";
+import { LanguageSettings } from "@/i18n/settings-dialog";
 const formatProjectDuration = ({
 	duration,
 }: {
@@ -138,6 +141,8 @@ export default function ProjectsPage() {
 }
 
 function ProjectsHeader() {
+	const t = useT();
+
 	const { viewMode, isHydrated, setViewMode } = useProjectsStore();
 
 	return (
@@ -149,14 +154,14 @@ function ProjectsHeader() {
 							<BreadcrumbItem>
 								<BreadcrumbLink asChild>
 									<Link href="/" className="text-sm sm:text-base">
-										Home
+										{t("Home")}
 									</Link>
 								</BreadcrumbLink>
 							</BreadcrumbItem>
 							<BreadcrumbSeparator />
 							<BreadcrumbItem>
 								<BreadcrumbPage className="text-sm sm:text-base font-medium">
-									All projects
+									{t("All projects")}
 								</BreadcrumbPage>
 							</BreadcrumbItem>
 						</BreadcrumbList>
@@ -173,7 +178,7 @@ function ProjectsHeader() {
 									isHydrated && viewMode === mode && "!bg-accent",
 								)}
 								onClick={() => setViewMode({ viewMode: mode })}
-								aria-label={label}
+								aria-label={t(label)}
 								aria-pressed={isHydrated && viewMode === mode}
 							>
 								<HugeiconsIcon icon={icon} className="size-4" />
@@ -183,6 +188,7 @@ function ProjectsHeader() {
 				</div>
 
 				<div className="flex items-center gap-3 md:gap-4">
+					<LanguageSettings />
 					<SearchBar className="hidden md:block" />
 					<NewProjectButton />
 				</div>
@@ -200,6 +206,8 @@ const SORT_LABELS: Record<TProjectSortKey, string> = {
 };
 
 function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
+	const t = useT();
+
 	const {
 		selectedProjectIds,
 		sortKey,
@@ -243,7 +251,7 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 						}
 					/>
 					<span className="text-muted-foreground hidden md:block">
-						Select all
+						{t("Select all")}
 					</span>
 				</Label>
 
@@ -251,7 +259,7 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 
 				<SortDropdown>
 					<Button variant="text" className="text-muted-foreground pl-2">
-						{SORT_LABELS[sortKey]}
+						{t(SORT_LABELS[sortKey])}
 					</Button>
 				</SortDropdown>
 				<Button
@@ -269,7 +277,9 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 							});
 						}
 					}}
-					aria-label={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
+					aria-label={t("Sort {v0}", {
+						v0: sortOrder === "asc" ? t("ascending") : t("descending"),
+					})}
 				>
 					<HugeiconsIcon
 						icon={ArrowDown02Icon}
@@ -285,7 +295,7 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 							key={mode}
 							variant="text"
 							onClick={() => setViewMode({ viewMode: mode })}
-							aria-label={label}
+							aria-label={t(label)}
 						>
 							<HugeiconsIcon
 								icon={icon}
@@ -309,6 +319,8 @@ function SearchBar({
 	className?: string;
 	collapsed?: boolean;
 }) {
+	const t = useT();
+
 	const { searchQuery, setSearchQuery } = useProjectsStore();
 
 	return (
@@ -331,7 +343,7 @@ function SearchBar({
 						aria-hidden="true"
 					/>
 					<Input
-						placeholder="Search..."
+						placeholder={t("Search...")}
 						value={searchQuery}
 						onChange={(event) => setSearchQuery({ query: event.target.value })}
 						size="lg"
@@ -391,6 +403,8 @@ async function renameProject({
 }
 
 function ProjectActions() {
+	const t = useT();
+
 	const editor = useEditor();
 	const { selectedProjectIds, clearSelectedProjects } = useProjectsStore();
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -451,7 +465,7 @@ function ProjectActions() {
 								onClick={actionHandlers[action.id]}
 							>
 								<HugeiconsIcon icon={action.icon} />
-								{action.label}
+								{t(action.label)}
 							</DropdownMenuItem>
 						))}
 					</DropdownMenuContent>
@@ -469,6 +483,8 @@ function ProjectActions() {
 }
 
 function SortDropdown({ children }: { children: React.ReactNode }) {
+	const t = useT();
+
 	const { sortKey, setSortKey } = useProjectsStore();
 
 	return (
@@ -479,25 +495,25 @@ function SortDropdown({ children }: { children: React.ReactNode }) {
 					checked={sortKey === "createdAt"}
 					onCheckedChange={() => setSortKey({ sortKey: "createdAt" })}
 				>
-					Created
+					{t("Created")}
 				</DropdownMenuCheckboxItem>
 				<DropdownMenuCheckboxItem
 					checked={sortKey === "updatedAt"}
 					onCheckedChange={() => setSortKey({ sortKey: "updatedAt" })}
 				>
-					Modified
+					{t("Modified")}
 				</DropdownMenuCheckboxItem>
 				<DropdownMenuCheckboxItem
 					checked={sortKey === "name"}
 					onCheckedChange={() => setSortKey({ sortKey: "name" })}
 				>
-					Name
+					{t("Name")}
 				</DropdownMenuCheckboxItem>
 				<DropdownMenuCheckboxItem
 					checked={sortKey === "duration"}
 					onCheckedChange={() => setSortKey({ sortKey: "duration" })}
 				>
-					Duration
+					{t("Duration")}
 				</DropdownMenuCheckboxItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
@@ -505,12 +521,14 @@ function SortDropdown({ children }: { children: React.ReactNode }) {
 }
 
 function NewProjectButton() {
+	const t = useT();
+
 	const editor = useEditor();
 	const router = useRouter();
 
 	const handleCreateProject = async () => {
 		const projectId = await editor.project.createNewProject({
-			name: "New project",
+			name: t("New project"),
 		});
 		router.push(`/editor/${projectId}`);
 	};
@@ -521,8 +539,10 @@ function NewProjectButton() {
 			className="flex px-5 md:px-6"
 			onClick={handleCreateProject}
 		>
-			<span className="text-sm font-medium hidden md:block">New project</span>
-			<span className="text-sm font-medium block md:hidden">New</span>
+			<span className="text-sm font-medium hidden md:block">
+				{t("New project")}
+			</span>
+			<span className="text-sm font-medium block md:hidden">{t("New")}</span>
 		</Button>
 	);
 }
@@ -534,6 +554,8 @@ function ProjectItem({
 	project: TProjectMetadata;
 	allProjectIds: string[];
 }) {
+	const t = useT();
+
 	const {
 		selectedProjectIds,
 		viewMode,
@@ -584,7 +606,7 @@ function ProjectItem({
 					{project.thumbnail ? (
 						<Image
 							src={project.thumbnail}
-							alt="Project thumbnail"
+							alt={t("Project thumbnail")}
 							fill
 							className="object-cover"
 						/>
@@ -608,7 +630,10 @@ function ProjectItem({
 				</h3>
 				<div className="text-muted-foreground flex items-center gap-1.5 text-sm">
 					<HugeiconsIcon icon={Calendar04Icon} className="size-4" />
-					<span>Created {formatDate({ date: project.createdAt })}</span>
+					<span>
+						{t("Created")}{" "}
+						{formatDate({ date: project.createdAt, locale: t.locale })}
+					</span>
 				</div>
 			</CardContent>
 		</Card>
@@ -620,7 +645,7 @@ function ProjectItem({
 				{project.thumbnail ? (
 					<Image
 						src={project.thumbnail}
-						alt="Project thumbnail"
+						alt={t("Project thumbnail")}
 						fill
 						className="object-cover"
 					/>
@@ -640,7 +665,7 @@ function ProjectItem({
 			</span>
 
 			<span className="text-muted-foreground text-sm shrink-0 w-auto pl-8 text-right hidden xs:block">
-				{formatDate({ date: project.createdAt })}
+				{formatDate({ date: project.createdAt, locale: t.locale })}
 			</span>
 		</div>
 	);
@@ -771,25 +796,27 @@ function ProjectContextMenuContent({
 	onDeleteClick: () => void;
 	onInfoClick: () => void;
 }) {
+	const t = useT();
+
 	return (
 		<ContextMenuContent>
 			<ContextMenuItem
 				icon={<HugeiconsIcon icon={Edit03Icon} />}
 				onClick={onRenameClick}
 			>
-				Rename
+				{t("Rename")}
 			</ContextMenuItem>
 			<ContextMenuItem
 				icon={<HugeiconsIcon icon={Copy01Icon} />}
 				onClick={onDuplicateClick}
 			>
-				Duplicate
+				{t("Duplicate")}
 			</ContextMenuItem>
 			<ContextMenuItem
 				icon={<HugeiconsIcon icon={InformationCircleIcon} />}
 				onClick={onInfoClick}
 			>
-				Info
+				{t("Info")}
 			</ContextMenuItem>
 			<ContextMenuSeparator />
 			<ContextMenuItem
@@ -797,7 +824,7 @@ function ProjectContextMenuContent({
 				icon={<HugeiconsIcon icon={Delete02Icon} />}
 				onClick={onDeleteClick}
 			>
-				Delete
+				{t("Delete")}
 			</ContextMenuItem>
 		</ContextMenuContent>
 	);
@@ -820,6 +847,8 @@ function ProjectMenu({
 	onDeleteClick: () => void;
 	onInfoClick: () => void;
 }) {
+	const t = useT();
+
 	const handleMenuClick = ({
 		event,
 	}: {
@@ -874,7 +903,7 @@ function ProjectMenu({
 							: "!bg-transparent !shadow-none"
 					}
 					size="icon"
-					aria-label="Project menu"
+					aria-label={t("Project menu")}
 					onClick={(event) =>
 						handleMenuClick({
 							event: event as unknown as MouseEvent<HTMLButtonElement>,
@@ -897,19 +926,19 @@ function ProjectMenu({
 			<DropdownMenuContent className="w-48" align="end">
 				<DropdownMenuItem onClick={handleRename}>
 					<HugeiconsIcon icon={Edit03Icon} />
-					Rename
+					{t("Rename")}
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleDuplicate}>
 					<HugeiconsIcon icon={Copy01Icon} />
-					Duplicate
+					{t("Duplicate")}
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleInfoClick}>
 					<HugeiconsIcon icon={InformationCircleIcon} />
-					Info
+					{t("Info")}
 				</DropdownMenuItem>
 				<DropdownMenuItem variant="destructive" onClick={handleDeleteClick}>
 					<HugeiconsIcon icon={Delete02Icon} />
-					Delete
+					{t("Delete")}
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
@@ -948,6 +977,8 @@ function ProjectsSkeleton() {
 }
 
 function EmptyState() {
+	const t = useT();
+
 	const { searchQuery, setSearchQuery } = useProjectsStore();
 	const router = useRouter();
 	const editor = useEditor();
@@ -956,13 +987,13 @@ function EmptyState() {
 	const handleCreateProject = async () => {
 		try {
 			const projectId = await editor.project.createNewProject({
-				name: "New project",
+				name: t("New project"),
 			});
 			router.push(`/editor/${projectId}`);
 		} catch (error) {
-			toast.error("Failed to create project", {
+			toast.error(t("Failed to create project"), {
 				description:
-					error instanceof Error ? error.message : "Please try again",
+					error instanceof Error ? error.message : t("Please try again"),
 			});
 		}
 	};
@@ -976,9 +1007,11 @@ function EmptyState() {
 						className="text-muted-foreground size-16 bg-accent/35 border rounded-md p-4"
 					/>
 					<div className="flex flex-col items-center gap-3">
-						<h3 className="text-lg font-medium">No results found</h3>
+						<h3 className="text-lg font-medium">{t("No results found")}</h3>
 						<p className="text-muted-foreground max-w-md">
-							Your search for "{searchQuery}" did not return any results.
+							{t('Your search for "')}
+							{searchQuery}
+							{t('" did not return any results.')}
 						</p>
 					</div>
 				</div>
@@ -987,7 +1020,7 @@ function EmptyState() {
 					variant="outline"
 					size="lg"
 				>
-					Clear search
+					{t("Clear search")}
 				</Button>
 			</div>
 		);
@@ -1002,15 +1035,16 @@ function EmptyState() {
 						className="text-muted-foreground size-8"
 					/>
 				</div>
-				<h3 className="text-lg font-medium">No projects yet</h3>
+				<h3 className="text-lg font-medium">{t("No projects yet")}</h3>
 				<p className="text-muted-foreground max-w-md">
-					Start creating your first project. Import media, edit, and export your
-					videos. All privately.
+					{t(
+						"Start creating your first project. Import media, edit, and export your videos. All privately.",
+					)}
 				</p>
 			</div>
 			<Button size="lg" className="gap-2" onClick={handleCreateProject}>
 				<HugeiconsIcon icon={PlusSignIcon} />
-				Create your first project
+				{t("Create your first project")}
 			</Button>
 		</div>
 	);

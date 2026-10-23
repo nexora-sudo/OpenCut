@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -22,6 +23,8 @@ export function RenameProjectDialog({
 	onConfirm: (newName: string) => void;
 	projectName: string;
 }) {
+	const t = useT();
+
 	const [name, setName] = useState(projectName);
 
 	const handleOpenChange = (open: boolean) => {
@@ -35,11 +38,11 @@ export function RenameProjectDialog({
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Rename project</DialogTitle>
+					<DialogTitle>{t("Rename project")}</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="gap-3">
-					<Label>New name</Label>
+					<Label>{t("New name")}</Label>
 					<Input
 						value={name}
 						onChange={(e) => setName(e.target.value)}
@@ -49,7 +52,7 @@ export function RenameProjectDialog({
 								onConfirm(name);
 							}
 						}}
-						placeholder="Enter a new name"
+						placeholder={t("Enter a new name")}
 					/>
 				</DialogBody>
 
@@ -62,9 +65,9 @@ export function RenameProjectDialog({
 							onOpenChange(false);
 						}}
 					>
-						Cancel
+						{t("Cancel")}
 					</Button>
-					<Button onClick={() => onConfirm(name)}>Rename</Button>
+					<Button onClick={() => onConfirm(name)}>{t("Rename")}</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import {
 	Dialog,
@@ -11,17 +12,26 @@ import { useEditor } from "@/editor/use-editor";
 import { Loader2 } from "lucide-react";
 
 export function MigrationDialog() {
+	const t = useT();
+
 	const editor = useEditor();
 	const migrationState = editor.project.getMigrationState();
 
 	if (!migrationState.isMigrating) return null;
 
 	const title = migrationState.projectName
-		? "Updating project"
-		: "Updating projects";
+		? t("Updating project")
+		: t("Updating projects");
 	const description = migrationState.projectName
-		? `Upgrading "${migrationState.projectName}" from v${migrationState.fromVersion} to v${migrationState.toVersion}`
-		: `Upgrading projects from v${migrationState.fromVersion} to v${migrationState.toVersion}`;
+		? t('Upgrading "{v0}" from v{v1} to v{v2}', {
+				v0: migrationState.projectName,
+				v1: migrationState.fromVersion,
+				v2: migrationState.toVersion,
+			})
+		: t("Upgrading projects from v{v0} to v{v1}", {
+				v0: migrationState.fromVersion,
+				v1: migrationState.toVersion,
+			});
 
 	return (
 		<Dialog open={true}>
@@ -31,8 +41,8 @@ export function MigrationDialog() {
 				onEscapeKeyDown={(event) => event.preventDefault()}
 			>
 				<DialogHeader>
-					<DialogTitle>{title}</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
+					<DialogTitle>{t(title)}</DialogTitle>
+					<DialogDescription>{t(description)}</DialogDescription>
 				</DialogHeader>
 
 				<div className="flex items-center justify-center py-4">

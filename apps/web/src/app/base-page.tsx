@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { cn } from "@/utils/ui";
@@ -21,6 +22,8 @@ export function BasePage({
 	description,
 	action,
 }: BasePageProps) {
+	const t = useT();
+
 	const maxWidthClass = {
 		"3xl": "max-w-3xl",
 		"6xl": "max-w-6xl",
@@ -40,10 +43,10 @@ export function BasePage({
 				{title && description && (
 					<div className="flex flex-col gap-8 text-center">
 						<h1 className="text-5xl font-bold tracking-tight md:text-6xl">
-							{title}
+							{t(title)}
 						</h1>
 						<p className="text-muted-foreground mx-auto max-w-2xl text-xl leading-relaxed">
-							{description}
+							{t(description)}
 						</p>
 						{action}
 					</div>

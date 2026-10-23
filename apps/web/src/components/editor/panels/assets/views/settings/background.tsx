@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import {
@@ -39,6 +40,8 @@ const BlurPreview = memo(
 		isSelected: boolean;
 		onSelect: () => void;
 	}) => {
+		const t = useT();
+
 		const canvasRef = useRef<HTMLCanvasElement>(null);
 
 		useEffect(() => {
@@ -67,7 +70,7 @@ const BlurPreview = memo(
 				)}
 				onClick={onSelect}
 				type="button"
-				aria-label={`Select ${blur.label} blur`}
+				aria-label={t("Select {v0} blur", { v0: blur.label })}
 			>
 				<canvas
 					ref={canvasRef}
@@ -75,7 +78,7 @@ const BlurPreview = memo(
 				/>
 				<div className="absolute right-1 bottom-1 left-1 text-center">
 					<span className="rounded bg-black/50 px-1 text-xs text-white">
-						{blur.label}
+						{t(blur.label)}
 					</span>
 				</div>
 			</button>
@@ -99,6 +102,8 @@ const BackgroundPreviews = memo(
 		onSelect: (bg: string) => void;
 		useBackgroundColor?: boolean;
 	}) => {
+		const t = useT();
+
 		return useMemo(
 			() =>
 				backgrounds.map((bg) => (
@@ -122,10 +127,11 @@ const BackgroundPreviews = memo(
 						}
 						onClick={() => onSelect(bg)}
 						type="button"
-						aria-label={`Select background ${bg}`}
+						aria-label={t("Select background {v0}", { v0: bg })}
 					/>
 				)),
 			[
+				t,
 				backgrounds,
 				isColorBackground,
 				currentBackgroundColor,
@@ -149,6 +155,8 @@ function CustomColorPreview({
 	onPreview: (color: string) => void;
 	onCommit: (color: string) => void;
 }) {
+	const t = useT();
+
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
@@ -158,7 +166,7 @@ function CustomColorPreview({
 						isSelected && "border-primary border-2",
 					)}
 					type="button"
-					aria-label="Pick a custom background color"
+					aria-label={t("Pick a custom background color")}
 				>
 					<span
 						className="absolute inset-0"
@@ -180,12 +188,30 @@ function CustomColorPreview({
 }
 
 const COLOR_SECTIONS = [
-	{ id: "colors", title: "Colors", backgrounds: colors, useBackgroundColor: true, showCustomPicker: true },
-	{ id: "pattern-craft", title: "Pattern craft", backgrounds: patternCraftGradients, showCustomPicker: false },
-	{ id: "syntax-ui", title: "Syntax UI", backgrounds: syntaxUIGradients, showCustomPicker: false },
+	{
+		id: "colors",
+		title: "Colors",
+		backgrounds: colors,
+		useBackgroundColor: true,
+		showCustomPicker: true,
+	},
+	{
+		id: "pattern-craft",
+		title: "Pattern craft",
+		backgrounds: patternCraftGradients,
+		showCustomPicker: false,
+	},
+	{
+		id: "syntax-ui",
+		title: "Syntax UI",
+		backgrounds: syntaxUIGradients,
+		showCustomPicker: false,
+	},
 ] as const;
 
 export function BackgroundContent() {
+	const t = useT();
+
 	const editor = useEditor();
 	const activeProject = useEditor((e) => e.project.getActive());
 
@@ -263,7 +289,7 @@ export function BackgroundContent() {
 				showTopBorder={false}
 			>
 				<SectionHeader>
-					<SectionTitle>Blur</SectionTitle>
+					<SectionTitle>{t("Blur")}</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<div className="flex flex-wrap gap-2">{blurPreviews}</div>
@@ -277,7 +303,7 @@ export function BackgroundContent() {
 					sectionKey={`settings:background-${section.id}`}
 				>
 					<SectionHeader>
-						<SectionTitle>{section.title}</SectionTitle>
+						<SectionTitle>{t(section.title)}</SectionTitle>
 					</SectionHeader>
 					<SectionContent>
 						<div className="flex flex-wrap gap-2">

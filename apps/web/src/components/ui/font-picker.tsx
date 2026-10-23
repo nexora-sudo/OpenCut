@@ -1,6 +1,14 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
-import { useState, useMemo, useRef, useEffect, useCallback, type CSSProperties } from "react";
+import {
+	useState,
+	useMemo,
+	useRef,
+	useEffect,
+	useCallback,
+	type CSSProperties,
+} from "react";
 import { List, type RowComponentProps } from "react-window";
 import {
 	Popover,
@@ -43,11 +51,18 @@ export function FontPicker({
 	onValueChange,
 	className,
 }: FontPickerProps) {
+	const t = useT();
+
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const [activeTab, setActiveTab] = useState<FontTab>("all");
 	const searchInputRef = useRef<HTMLInputElement>(null);
-	const { atlas, status, fontNames, retry: handleRetry } = useFontAtlas({ open });
+	const {
+		atlas,
+		status,
+		fontNames,
+		retry: handleRetry,
+	} = useFontAtlas({ open });
 
 	const filteredFonts = useMemo(() => {
 		if (!search) return fontNames;
@@ -98,7 +113,7 @@ export function FontPicker({
 						<HugeiconsIcon icon={TextIcon} />
 					</span>
 					<span className="truncate" style={{ fontFamily: defaultValue }}>
-						{defaultValue ?? "Select a font"}
+						{defaultValue ?? t("Select a font")}
 					</span>
 				</div>
 				<ChevronDown className="size-3 shrink-0 opacity-50" />
@@ -120,7 +135,7 @@ export function FontPicker({
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 shrink-0 opacity-50" />
 					<Input
 						ref={searchInputRef}
-						placeholder={`Search ${activeTabLabel}...`}
+						placeholder={t("Search {v0}...", { v0: activeTabLabel })}
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 						size="xs"
@@ -140,22 +155,22 @@ export function FontPicker({
 							)}
 							onClick={() => setActiveTab(tab.key)}
 						>
-							{tab.label}
+							{t(tab.label)}
 						</button>
 					))}
 				</div>
 				{status === "loading" && (
 					<div className="py-8 text-center text-sm text-muted-foreground">
-						Loading fonts...
+						{t("Loading fonts...")}
 					</div>
 				)}
 				{status === "error" && (
 					<div className="flex flex-col items-center gap-3 py-8 px-4">
 						<p className="text-sm text-muted-foreground text-center">
-							Failed to load font previews.
+							{t("Failed to load font previews.")}
 						</p>
 						<Button variant="outline" size="sm" onClick={handleRetry}>
-							Retry
+							{t("Retry")}
 						</Button>
 					</div>
 				)}
@@ -163,7 +178,7 @@ export function FontPicker({
 					fontNames.length > 0 &&
 					filteredFonts.length === 0 && (
 						<div className="py-6 text-center text-sm text-muted-foreground">
-							No fonts found.
+							{t("No fonts found.")}
 						</div>
 					)}
 				{status === "idle" && atlas && filteredFonts.length > 0 && (
@@ -246,7 +261,10 @@ function FontRow({
 		>
 			<div className="min-w-0 overflow-hidden">
 				{isSystemFont ? (
-					<span className="text-xl text-foreground/85" style={{ fontFamily: fontName }}>
+					<span
+						className="text-xl text-foreground/85"
+						style={{ fontFamily: fontName }}
+					>
 						{fontName}
 					</span>
 				) : (

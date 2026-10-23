@@ -1,3 +1,6 @@
+import { getLocalizedMetadata } from "@/i18n/metadata";
+
+import { useT } from "@/i18n/use-t";
 import type { Metadata } from "next";
 import { BasePage } from "@/app/base-page";
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +16,7 @@ import {
 	ReleaseChanges,
 } from "@/changelog/components/release";
 
-export const metadata: Metadata = {
+const pageMetadata: Metadata = {
 	title: "Changelog - OpenCut",
 	description: "What's new in OpenCut",
 	openGraph: {
@@ -37,11 +40,20 @@ export const metadata: Metadata = {
 	},
 };
 
+export async function generateMetadata() {
+	return getLocalizedMetadata(pageMetadata);
+}
+
 export default function ChangelogPage() {
+	const t = useT();
+
 	const releases = getSortedReleases();
 
 	return (
-		<BasePage title="Changelog" description="See what's new in OpenCut">
+		<BasePage
+			title={t("Changelog")}
+			description={t("See what's new in OpenCut")}
+		>
 			<div className="mx-auto w-full max-w-3xl">
 				<div className="relative">
 					<div
@@ -66,15 +78,17 @@ export default function ChangelogPage() {
 }
 
 function ReleaseEntry({ release }: { release: ReleaseType }) {
+	const t = useT();
+
 	return (
 		<ReleaseArticle variant="list" isLatest={release.isLatest}>
 			<ReleaseMeta release={release} />
 			<div className="flex flex-col gap-4">
 				<ReleaseTitle as="h2" href={`/changelog/${release.version}`}>
-					{release.title}
+					{t(release.title)}
 				</ReleaseTitle>
 				{release.description && (
-					<ReleaseDescription>{release.description}</ReleaseDescription>
+					<ReleaseDescription>{t(release.description)}</ReleaseDescription>
 				)}
 			</div>
 			<ReleaseChanges release={release} />

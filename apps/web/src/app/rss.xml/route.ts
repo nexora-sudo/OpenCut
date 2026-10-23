@@ -1,13 +1,16 @@
+import { getT } from "@/i18n/server";
 import { Feed } from "feed";
 import { getPosts } from "@/blog/query";
 import { SITE_INFO, SITE_URL } from "@/site/brand";
 
 export async function GET() {
+	const t = await getT();
+
 	try {
 		const { posts } = await getPosts();
 
 		const feed = new Feed({
-			title: `${SITE_INFO.title} Blog`,
+			title: t("{v0} Blog", { v0: SITE_INFO.title }),
 			description: SITE_INFO.description,
 			id: `${SITE_URL}`,
 			link: `${SITE_URL}/blog/`,

@@ -1,3 +1,4 @@
+import { translate } from "@/i18n/translate";
 import type { EditorCore } from "@/core";
 import { toast } from "sonner";
 import type { MediaAsset } from "@/media/types";
@@ -41,7 +42,7 @@ export class MediaManager {
 			this.notify();
 
 			if (storageService.isQuotaExceededError({ error })) {
-				toast.error("Not enough browser storage", {
+				toast.error(translate("Not enough browser storage"), {
 					description: error instanceof Error ? error.message : undefined,
 				});
 			}
@@ -73,11 +74,12 @@ export class MediaManager {
 						assetId: uniqueIds[0],
 					})
 				: new BatchCommand(
-						uniqueIds.map((id) =>
-							new RemoveMediaAssetCommand({
-								projectId,
-								assetId: id,
-							}),
+						uniqueIds.map(
+							(id) =>
+								new RemoveMediaAssetCommand({
+									projectId,
+									assetId: id,
+								}),
 						),
 					);
 

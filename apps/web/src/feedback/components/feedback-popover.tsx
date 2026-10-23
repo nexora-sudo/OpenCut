@@ -1,4 +1,6 @@
 "use client";
+import { useT } from "@/i18n/use-t";
+import { getClientLocale } from "@/i18n/translate";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -47,6 +49,8 @@ function writeHistory({ entries }: { entries: FeedbackEntry[] }): void {
 }
 
 function useFeedback() {
+	const t = useT();
+
 	const [entries, setEntries] = useState<FeedbackEntry[]>(readHistory);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,7 +73,7 @@ function useFeedback() {
 
 			if (!res.ok) {
 				const data = await res.json().catch(() => null);
-				throw new Error(data?.error ?? "Failed to submit");
+				throw new Error(data?.error ?? t("Failed to submit"));
 			}
 
 			const { entry } = await res.json();
@@ -77,10 +81,10 @@ function useFeedback() {
 			setEntries(next);
 			writeHistory({ entries: next });
 			onSuccess();
-			toast.success("Feedback sent");
+			toast.success(t("Feedback sent"));
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : "Failed to send feedback",
+				error instanceof Error ? error.message : t("Failed to send feedback"),
 			);
 		} finally {
 			setIsSubmitting(false);
@@ -91,13 +95,15 @@ function useFeedback() {
 }
 
 export function FeedbackPopover() {
+	const t = useT();
+
 	const [open, setOpen] = useState(false);
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button variant="outline" className="h-8">
-					Send feedback
+					{t("Send feedback")}
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-80 p-0">
@@ -110,6 +116,8 @@ export function FeedbackPopover() {
 type View = "compose" | "history";
 
 function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
+	const t = useT();
+
 	const { entries, isSubmitting, submit } = useFeedback();
 	const [view, setView] = useState<View>("compose");
 
@@ -148,7 +156,7 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 						onClick={() => setView("compose")}
 						className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
 					>
-						← Back
+						{t("← Back")}
 					</button>
 				</div>
 			</div>
@@ -158,7 +166,10 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 	return (
 		<div className="flex flex-col">
 			<Form persistKey={PERSIST_KEY} {...form}>
-				<form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
+				<form
+					onSubmit={form.handleSubmit(handleSubmit)}
+					className="flex flex-col"
+				>
 					<FormField
 						control={form.control}
 						name="message"
@@ -166,7 +177,7 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 							<FormItem>
 								<FormControl>
 									<Textarea
-										placeholder="Thoughts, bugs, ideas..."
+										placeholder={t("Thoughts, bugs, ideas...")}
 										className="min-h-[7rem] text-sm p-3 bg-background shadow-none border-none! resize-none"
 										{...field}
 									/>
@@ -195,7 +206,7 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 									size="sm"
 									onClick={onClose}
 								>
-									Cancel
+									{t("Cancel")}
 								</Button>
 							)}
 							<Button
@@ -203,7 +214,7 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 								size="sm"
 								disabled={isSubmitting || !form.watch("message").trim()}
 							>
-								{isSubmitting ? <Spinner /> : "Send"}
+								{isSubmitting ? <Spinner /> : t("Send")}
 							</Button>
 						</div>
 					</div>
@@ -213,29 +224,38 @@ function FeedbackPopoverContent({ onClose }: { onClose: () => void }) {
 	);
 }
 
-function relativeDate(iso: string): string {
+function relativeDate({
+	iso,
+	locale = getClientLocale(),
+}: {
+	iso: string;
+	locale?: string;
+}): string {
+	const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 	const diff = Date.now() - new Date(iso).getTime();
 	const mins = Math.floor(diff / 60_000);
-	if (mins < 1) return "just now";
-	if (mins < 60) return `${mins}m ago`;
+	if (mins < 1) return relative.format(0, "second");
+	if (mins < 60) return relative.format(-mins, "minute");
 	const hrs = Math.floor(mins / 60);
-	if (hrs < 24) return `${hrs}h ago`;
+	if (hrs < 24) return relative.format(-hrs, "hour");
 	const days = Math.floor(hrs / 24);
-	if (days < 7) return `${days}d ago`;
-	return new Date(iso).toLocaleDateString(undefined, {
+	if (days < 7) return relative.format(-days, "day");
+	return new Date(iso).toLocaleDateString(locale, {
 		month: "short",
 		day: "numeric",
 	});
 }
 
 function FeedbackEntryItem({ entry }: { entry: FeedbackEntry }) {
+	const t = useT();
+
 	return (
 		<div className="px-3 py-2.5">
 			<p className="text-sm text-muted-foreground leading-snug whitespace-pre-wrap break-words">
 				{entry.message}
 			</p>
 			<span className="mt-1 block text-[11px] text-muted-foreground/50">
-				{relativeDate(entry.createdAt)}
+				{relativeDate({ iso: entry.createdAt, locale: t.locale })}
 			</span>
 		</div>
 	);

@@ -1,3 +1,4 @@
+import { translate } from "@/i18n/translate";
 import {
 	pipeline,
 	type AutomaticSpeechRecognitionPipeline,
@@ -111,7 +112,10 @@ async function handleInit({ modelId }: { modelId: string }) {
 	} catch (error) {
 		self.postMessage({
 			type: "init-error",
-			error: error instanceof Error ? error.message : "Failed to load model",
+			error:
+				error instanceof Error
+					? error.message
+					: translate("Failed to load model"),
 		} satisfies WorkerResponse);
 	}
 }
@@ -170,7 +174,10 @@ async function handleTranscribe({
 		if (cancelled) return;
 		self.postMessage({
 			type: "transcribe-error",
-			error: error instanceof Error ? error.message : "Transcription failed",
+			error:
+				error instanceof Error
+					? error.message
+					: translate("Transcription failed"),
 		} satisfies WorkerResponse);
 	}
 }

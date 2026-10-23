@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import * as React from "react";
 import { Dialog as SheetPrimitive } from "radix-ui";
@@ -66,32 +67,36 @@ const sheetVariants = cva(
 );
 
 interface SheetContentProps
-	extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
+	extends
+		React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
 		VariantProps<typeof sheetVariants> {}
 
 const SheetContent = React.forwardRef<
 	React.ElementRef<typeof SheetPrimitive.Content>,
 	SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
-	<SheetPortal>
-		<SheetOverlay />
-		<SheetPrimitive.Content
-			ref={ref}
-			className={cn(sheetVariants({ side }), className)}
-			onOpenAutoFocus={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-			}}
-			{...props}
-		>
-			<SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-				<X className="size-5" />
-				<span className="sr-only">Close</span>
-			</SheetPrimitive.Close>
-			{children}
-		</SheetPrimitive.Content>
-	</SheetPortal>
-));
+>(({ side = "right", className, children, ...props }, ref) => {
+	const t = useT();
+	return (
+		<SheetPortal>
+			<SheetOverlay />
+			<SheetPrimitive.Content
+				ref={ref}
+				className={cn(sheetVariants({ side }), className)}
+				onOpenAutoFocus={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+				}}
+				{...props}
+			>
+				<SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+					<X className="size-5" />
+					<span className="sr-only">{t("Close")}</span>
+				</SheetPrimitive.Close>
+				{children}
+			</SheetPrimitive.Content>
+		</SheetPortal>
+	);
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({

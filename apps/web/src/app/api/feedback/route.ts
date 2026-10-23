@@ -1,3 +1,4 @@
+import { getT } from "@/i18n/server";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/auth/rate-limit";
@@ -11,9 +12,14 @@ const submitSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+	const t = await getT();
+
 	const { limited } = await checkRateLimit({ request });
 	if (limited) {
-		return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+		return NextResponse.json(
+			{ error: t("Too many requests") },
+			{ status: 429 },
+		);
 	}
 
 	const body = await request.json();

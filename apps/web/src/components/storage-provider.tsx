@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -27,6 +28,8 @@ interface StorageProviderProps {
 }
 
 export function StorageProvider({ children }: StorageProviderProps) {
+	const t = useT();
+
 	const [status, setStatus] = useState<StorageContextType>({
 		isInitialized: false,
 		isLoading: true,
@@ -49,7 +52,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
 
 				if (!hasSupport) {
 					toast.warning(
-						"Storage not fully supported. Some features may not work.",
+						t("Storage not fully supported. Some features may not work."),
 					);
 				}
 
@@ -67,13 +70,13 @@ export function StorageProvider({ children }: StorageProviderProps) {
 					isInitialized: false,
 					isLoading: false,
 					hasSupport: storageService.isFullySupported(),
-					error: error instanceof Error ? error.message : "Unknown error",
+					error: error instanceof Error ? error.message : t("Unknown error"),
 				});
 			}
 		};
 
 		initializeStorage();
-	}, [editor.project.loadAllProjects]);
+	}, [t, editor.project.loadAllProjects]);
 
 	return (
 		<StorageContext.Provider value={status}>{children}</StorageContext.Provider>

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -7,6 +8,7 @@ import { Button } from "./ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageSettings } from "@/i18n/settings-dialog";
 import {
 	Copy01Icon,
 	Download01Icon,
@@ -26,24 +28,26 @@ import {
 } from "./ui/context-menu";
 
 export function Header() {
+	const t = useT();
+
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const closeMenu = () => setIsMenuOpen(false);
 
 	const links = [
 		{
-			label: "Roadmap",
+			label: t("Roadmap"),
 			href: "/roadmap",
 		},
 		{
-			label: "Contributors",
+			label: t("Contributors"),
 			href: "/contributors",
 		},
 		{
-			label: "Sponsors",
+			label: t("Sponsors"),
 			href: "/sponsors",
 		},
 		{
-			label: "Blog",
+			label: t("Blog"),
 			href: "/blog",
 		},
 	];
@@ -57,7 +61,7 @@ export function Header() {
 							<Link href="/" className="flex items-center gap-3">
 								<Image
 									src={DEFAULT_LOGO_URL}
-									alt="OpenCut Logo"
+									alt={t("OpenCut Logo")}
 									className="invert dark:invert-0"
 									width={32}
 									height={32}
@@ -73,7 +77,7 @@ export function Header() {
 								}}
 							>
 								<HugeiconsIcon icon={Copy01Icon} />
-								Copy SVG
+								{t("Copy SVG")}
 							</ContextMenuItem>
 							<ContextMenuItem
 								onClick={() => {
@@ -84,12 +88,12 @@ export function Header() {
 								}}
 							>
 								<HugeiconsIcon icon={Download01Icon} />
-								Download SVG
+								{t("Download SVG")}
 							</ContextMenuItem>
 							<Link href="/brand">
 								<ContextMenuItem>
 									<HugeiconsIcon icon={LinkSquare02Icon} />
-									Brand assets
+									{t("Brand assets")}
 								</ContextMenuItem>
 							</Link>
 						</ContextMenuContent>
@@ -99,7 +103,7 @@ export function Header() {
 						{links.map((link) => (
 							<Link key={link.href} href={link.href}>
 								<Button variant="text" className="p-0 text-sm">
-									{link.label}
+									{t(link.label)}
 								</Button>
 							</Link>
 						))}
@@ -107,6 +111,9 @@ export function Header() {
 				</div>
 
 				<div className="relative z-10">
+					<div className="absolute right-full mr-3 top-0">
+						<LanguageSettings />
+					</div>
 					<div className="flex items-center gap-3 md:hidden">
 						<Button
 							variant="text"
@@ -126,7 +133,7 @@ export function Header() {
 						</Link>
 						<Link href="/projects">
 							<Button className="text-sm">
-								Projects
+								{t("Projects")}
 								<ArrowRight className="size-4" />
 							</Button>
 						</Link>
@@ -143,7 +150,7 @@ export function Header() {
 					<div className="relative h-full">
 						<button
 							type="button"
-							aria-label="Close menu"
+							aria-label={t("Close menu")}
 							className="absolute inset-0"
 							onClick={closeMenu}
 							onKeyDown={(event) => {
@@ -177,7 +184,7 @@ export function Header() {
 										className="text-2xl font-semibold"
 										onClick={() => setIsMenuOpen(false)}
 									>
-										{link.label}
+										{t(link.label)}
 									</Link>
 								</motion.div>
 							))}

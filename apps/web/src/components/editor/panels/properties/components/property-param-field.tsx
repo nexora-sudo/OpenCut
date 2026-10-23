@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import type {
 	ParamDefinition,
@@ -42,15 +43,19 @@ export function PropertyParamField({
 		onToggle: () => void;
 	};
 }) {
+	const t = useT();
+
 	return (
 		<SectionField
-			label={param.label}
+			label={t(param.label)}
 			beforeLabel={
 				keyframe && param.keyframable !== false ? (
 					<KeyframeToggle
 						isActive={keyframe.isActive}
 						isDisabled={keyframe.isDisabled}
-						title={`Toggle ${param.label.toLowerCase()} keyframe`}
+						title={t("Toggle {v0} keyframe", {
+							v0: t(param.label).toLowerCase(),
+						})}
 						onToggle={keyframe.onToggle}
 					/>
 				) : undefined
@@ -77,6 +82,8 @@ function ParamInput({
 	onPreview: (value: ParamValue) => void;
 	onCommit: () => void;
 }) {
+	const t = useT();
+
 	if (param.type === "number") {
 		return (
 			<NumberParamField
@@ -115,7 +122,7 @@ function ParamInput({
 				<SelectContent>
 					{param.options.map((option) => (
 						<SelectItem key={option.value} value={option.value}>
-							{option.label}
+							{t(option.label)}
 						</SelectItem>
 					))}
 				</SelectContent>
@@ -180,9 +187,7 @@ function NumberParamField({
 		);
 
 	const previewFromDisplay = (displayVal: number) => {
-		const clamped = clampDisplayValue(
-			snapToStep({ value: displayVal, step }),
-		);
+		const clamped = clampDisplayValue(snapToStep({ value: displayVal, step }));
 		onPreview(clamped / displayMultiplier);
 	};
 

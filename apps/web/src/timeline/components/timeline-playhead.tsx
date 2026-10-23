@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useRef } from "react";
 import { useContainerSize } from "@/hooks/use-container-size";
@@ -42,6 +43,8 @@ export function TimelinePlayhead({
 	playheadRef: externalPlayheadRef,
 	isSnappingToPlayhead = false,
 }: TimelinePlayheadProps) {
+	const t = useT();
+
 	const editor = useEditor();
 	const duration = editor.timeline.getTotalDuration();
 	const internalPlayheadRef = useRef<HTMLDivElement>(null);
@@ -54,14 +57,15 @@ export function TimelinePlayhead({
 		tracksScrollRef,
 		playheadRef,
 	});
-	const { height: timelineHeight } = useContainerSize({ containerRef: timelineRef });
+	const { height: timelineHeight } = useContainerSize({
+		containerRef: timelineRef,
+	});
 	const { height: tracksHeight } = useContainerSize({
 		containerRef: tracksScrollRef,
 	});
 	const { scrollLeft } = useScrollPosition({ scrollRef: tracksScrollRef });
 
-	const timelineContainerHeight =
-		timelineHeight || tracksHeight || 400;
+	const timelineContainerHeight = timelineHeight || tracksHeight || 400;
 	const totalHeight = Math.max(
 		0,
 		timelineContainerHeight -
@@ -84,9 +88,7 @@ export function TimelinePlayhead({
 		event.preventDefault();
 		const fps = editor.project.getActive().settings.fps;
 		const ticksPerFrame = mediaTime({
-			ticks: Math.round(
-				(TICKS_PER_SECOND * fps.denominator) / fps.numerator,
-			),
+			ticks: Math.round((TICKS_PER_SECOND * fps.denominator) / fps.numerator),
 		});
 		const direction = event.key === "ArrowRight" ? 1 : -1;
 		const now = editor.playback.getCurrentTime();
@@ -107,7 +109,7 @@ export function TimelinePlayhead({
 		<div
 			ref={playheadRef}
 			role="slider"
-			aria-label="Timeline playhead"
+			aria-label={t("Timeline playhead")}
 			aria-valuemin={0}
 			aria-valuemax={duration}
 			aria-valuenow={currentTime}
@@ -126,7 +128,7 @@ export function TimelinePlayhead({
 
 			<button
 				type="button"
-				aria-label="Drag playhead"
+				aria-label={t("Drag playhead")}
 				className={`pointer-events-auto absolute top-1 left-1/2 size-3 -translate-x-1/2 transform cursor-col-resize rounded-full border-2 shadow-xs ${isSnappingToPlayhead ? "bg-primary border-primary" : "bg-primary border-primary/50"}`}
 				onMouseDown={handlePlayheadMouseDown}
 			/>

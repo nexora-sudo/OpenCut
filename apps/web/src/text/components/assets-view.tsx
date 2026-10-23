@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { useEditor } from "@/editor/use-editor";
@@ -6,6 +7,8 @@ import { buildTextElement } from "@/timeline/element-utils";
 import type { MediaTime } from "@/wasm";
 
 export function TextView() {
+	const t = useT();
+
 	const editor = useEditor();
 
 	const handleAddToTimeline = ({ currentTime }: { currentTime: MediaTime }) => {
@@ -24,12 +27,12 @@ export function TextView() {
 	};
 
 	return (
-		<PanelView title="Text">
+		<PanelView title={t("Text")}>
 			<DraggableItem
 				name="Default text"
 				preview={
 					<div className="bg-accent flex size-full items-center justify-center rounded">
-						<span className="text-xs select-none">Default text</span>
+						<span className="text-xs select-none">{t("Default text")}</span>
 					</div>
 				}
 				dragData={{

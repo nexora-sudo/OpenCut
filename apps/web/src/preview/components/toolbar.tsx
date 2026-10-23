@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useState, useEffect } from "react";
 import { useEditor } from "@/editor/use-editor";
@@ -99,10 +100,12 @@ function TimecodeDisplay() {
 }
 
 function ZoomSelect() {
+	const t = useT();
+
 	const { isAtFit, zoomPercent, fitToScreen, setViewportPercent } =
 		usePreviewViewport();
 
-	const displayLabel = isAtFit ? "Fit" : `${zoomPercent}%`;
+	const displayLabel = isAtFit ? t("Fit") : `${zoomPercent}%`;
 
 	const onValueChange = (value: string) => {
 		if (value === "fit") {
@@ -119,7 +122,7 @@ function ZoomSelect() {
 		>
 			<SelectTrigger className="tabular-nums">{displayLabel}</SelectTrigger>
 			<SelectContent>
-				<SelectItem value="fit">Fit</SelectItem>
+				<SelectItem value="fit">{t("Fit")}</SelectItem>
 				<SelectSeparator />
 				{PREVIEW_ZOOM_PRESETS.map((preset) => (
 					<SelectItem key={preset} value={String(preset)}>

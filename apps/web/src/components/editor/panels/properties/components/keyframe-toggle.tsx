@@ -1,3 +1,4 @@
+import { useT } from "@/i18n/use-t";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { KeyframeIcon } from "@hugeicons/core-free-icons";
@@ -14,12 +15,14 @@ export function KeyframeToggle({
 	title: string;
 	onToggle: () => void;
 }) {
+	const t = useT();
+
 	return (
 		<Button
 			variant="text"
 			aria-pressed={isActive}
 			disabled={isDisabled}
-			title={title}
+			title={t(title)}
 			onClick={onToggle}
 			className="[&>svg]:size-3.5 mb-0.5"
 		>

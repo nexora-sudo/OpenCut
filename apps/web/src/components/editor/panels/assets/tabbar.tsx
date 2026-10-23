@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -15,6 +16,8 @@ import {
 } from "@/components/editor/panels/assets/assets-panel-store";
 
 export function TabBar() {
+	const t = useT();
+
 	const { activeTab, setActiveTab } = useAssetsPanelStore();
 	const [showTopFade, setShowTopFade] = useState(false);
 	const [showBottomFade, setShowBottomFade] = useState(false);
@@ -59,7 +62,7 @@ export function TabBar() {
 								<Button
 									variant={activeTab === tabKey ? "secondary" : "ghost"}
 									size="icon"
-									aria-label={tab.label}
+									aria-label={t(tab.label)}
 									className={cn(
 										"shrink-0",
 										"h-8 w-8",
@@ -77,7 +80,7 @@ export function TabBar() {
 								sideOffset={8}
 							>
 								<div className="text-foreground text-sm leading-none font-medium">
-									{tab.label}
+									{t(tab.label)}
 								</div>
 							</TooltipContent>
 						</Tooltip>

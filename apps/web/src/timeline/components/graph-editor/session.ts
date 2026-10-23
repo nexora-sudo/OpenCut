@@ -1,3 +1,4 @@
+import { translate } from "@/i18n/translate";
 import {
 	getCurveHandlesForNormalizedCubicBezier,
 	getEditableScalarChannels,
@@ -62,8 +63,7 @@ interface GraphEditorBaseSelectionState {
 	message: string;
 }
 
-export interface GraphEditorUnavailableState
-	extends GraphEditorBaseSelectionState {
+export interface GraphEditorUnavailableState extends GraphEditorBaseSelectionState {
 	status: "unavailable";
 	reason: GraphEditorUnavailableReason;
 }
@@ -597,8 +597,8 @@ export function resolveGraphEditorSelectionState({
 		status: "ready",
 		message:
 			segments.length === 1
-				? "Edit graph"
-				: `Edit graph for ${segments.length} properties`,
+				? translate("Edit graph")
+				: translate("Edit graph for {v0} properties", { v0: segments.length }),
 		componentOptions,
 		activeComponentKey,
 		trackId: selectedElement.trackId,

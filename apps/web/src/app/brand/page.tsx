@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import type { CSSProperties } from "react";
 import Image from "next/image";
@@ -106,13 +107,15 @@ const ASSET_SECTIONS: AssetSection[] = [
 ];
 
 export default function BrandPage() {
+	const t = useT();
+
 	return (
 		<BasePage
 			maxWidth="6xl"
-			title="Brand"
+			title={t("Brand")}
 			description={
 				<>
-					Download OpenCut brand assets for use in your projects.{" "}
+					{t("Download OpenCut brand assets for use in your projects.")}{" "}
 					<Link
 						href="#guidelines"
 						className="underline underline-offset-4"
@@ -122,7 +125,7 @@ export default function BrandPage() {
 								?.scrollIntoView({ behavior: "smooth" })
 						}
 					>
-						Read the brand guidelines.
+						{t("Read the brand guidelines.")}
 					</Link>
 				</>
 			}
@@ -138,7 +141,7 @@ export default function BrandPage() {
 					}}
 				>
 					<Download />
-					Download all
+					{t("Download all")}
 				</Button>
 			}
 		>
@@ -146,9 +149,9 @@ export default function BrandPage() {
 				{ASSET_SECTIONS.map((section) => (
 					<div key={section.title} className="flex flex-col gap-4">
 						<div className="flex flex-col gap-1">
-							<h2 className="font-semibold text-lg">{section.title}</h2>
+							<h2 className="font-semibold text-lg">{t(section.title)}</h2>
 							<p className="text-muted-foreground text-sm">
-								{section.description}
+								{t(section.description)}
 							</p>
 						</div>
 						<div
@@ -171,14 +174,11 @@ export default function BrandPage() {
 
 			<div id="guidelines" className="flex flex-col gap-8 text-sm">
 				<div className="flex flex-col gap-3">
-					<h2 className="font-semibold text-lg">Usage</h2>
+					<h2 className="font-semibold text-lg">{t("Usage")}</h2>
 					<p className="text-muted-foreground text-base leading-relaxed">
-						OpenCut is open source — the code is free to use under its license.
-						That license does not cover the name or logo. You can say you use
-						OpenCut, that your project integrates with OpenCut, or that it was
-						built on top of OpenCut. You cannot name your product OpenCut, imply
-						we made or endorse your product, or use the marks commercially
-						without asking first. For anything unclear, reach out at{" "}
+						{t(
+							"OpenCut is open source — the code is free to use under its license. That license does not cover the name or logo. You can say you use OpenCut, that your project integrates with OpenCut, or that it was built on top of OpenCut. You cannot name your product OpenCut, imply we made or endorse your product, or use the marks commercially without asking first. For anything unclear, reach out at",
+						)}{" "}
 						<Link
 							href="mailto:brand@opencut.app"
 							className="underline underline-offset-4"
@@ -190,7 +190,7 @@ export default function BrandPage() {
 				</div>
 
 				<div className="flex flex-col gap-3">
-					<h2 className="font-semibold text-lg">What&apos;s not allowed</h2>
+					<h2 className="font-semibold text-lg">{t("What's not allowed")}</h2>
 					<ul className="text-muted-foreground text-base flex flex-col gap-2 leading-relaxed">
 						{[
 							"Using OpenCut in the name of your product, service, or domain.",
@@ -200,7 +200,7 @@ export default function BrandPage() {
 						].map((item) => (
 							<li key={item} className="flex gap-2">
 								<span className="mt-0.5 shrink-0">-</span>
-								<span>{item}</span>
+								<span>{t(item)}</span>
 							</li>
 						))}
 					</ul>
@@ -228,6 +228,8 @@ const CHECKER_STYLES: Record<"dark" | "light", CSSProperties> = {
 };
 
 function AssetCard({ variant }: { variant: AssetVariant }) {
+	const t = useT();
+
 	const [copied, setCopied] = useState(false);
 
 	async function handleCopy() {
@@ -246,7 +248,7 @@ function AssetCard({ variant }: { variant: AssetVariant }) {
 			<div className="flex h-56 items-center justify-center px-12 py-8">
 				<Image
 					src={variant.src}
-					alt={variant.label}
+					alt={t(variant.label)}
 					width={variant.width}
 					height={variant.height}
 					className="max-h-16 w-auto select-none object-contain"

@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/i18n/use-t";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -7,11 +8,7 @@ import {
 	type TimeCodeFormat,
 } from "opencut-wasm";
 import { cn } from "@/utils/ui";
-import {
-	parseMediaTimecode,
-	snapSeekMediaTime,
-	type MediaTime,
-} from "@/wasm";
+import { parseMediaTimecode, snapSeekMediaTime, type MediaTime } from "@/wasm";
 
 interface EditableTimecodeProps {
 	time: MediaTime;
@@ -32,6 +29,8 @@ export function EditableTimecode({
 	className,
 	disabled = false,
 }: EditableTimecodeProps) {
+	const t = useT();
+
 	const [isEditing, setIsEditing] = useState(false);
 	const [inputValue, setInputValue] = useState("");
 	const [hasError, setHasError] = useState(false);
@@ -153,7 +152,7 @@ export function EditableTimecode({
 				disabled && "cursor-default hover:bg-transparent",
 				className,
 			)}
-			title={disabled ? undefined : "Click to edit time"}
+			title={disabled ? undefined : t("Click to edit time")}
 		>
 			{formattedTime}
 		</button>
