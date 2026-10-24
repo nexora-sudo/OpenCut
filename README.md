@@ -8,7 +8,7 @@ This fork uses the original Classic editor. Upstream Classic is archived; the [O
 
 ## Community: bugs and feature ideas
 
-This fork welcomes community bug fixes, feature proposals and translation improvements. You may write in **Português, English or 简体中文**.
+This fork welcomes community bug fixes, feature proposals and translation improvements.
 
 - [Report a bug](https://github.com/nexora-sudo/OpenCut/issues/new?template=bug_report.yml)
 - [Suggest a feature](https://github.com/nexora-sudo/OpenCut/issues/new?template=feature_request.yml)
