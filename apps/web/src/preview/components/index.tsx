@@ -145,6 +145,7 @@ function PreviewCanvas({
 	const editor = useEditor();
 	const activeProject = useEditor((e) => e.project.getActive());
 	const renderTree = useEditor((e) => e.renderer.getRenderTree());
+	const isExporting = useEditor((e) => e.project.getExportState().isExporting);
 	const viewport = usePreviewViewportState({
 		canvasHeight: nativeHeight,
 		canvasWidth: nativeWidth,
@@ -166,6 +167,10 @@ function PreviewCanvas({
 		[nativeWidth, nativeHeight, activeProject.settings.fps],
 	);
 
+	useEffect(() => {
+		frameRenderer.invalidate();
+	}, [frameRenderer, isExporting]);
+
 	// Mount the compositor's output canvas directly into the preview. wgpu
 	// renders straight into this element, so there is no intermediate copy —
 	// the container div owns positioning/styling, the canvas itself fills it.
@@ -185,7 +190,7 @@ function PreviewCanvas({
 	}, [renderer]);
 
 	const render = useCallback(() => {
-		if (!renderTree) return;
+		if (!renderTree || isExporting) return;
 		const renderTime = Math.min(
 			editor.playback.getCurrentTime(),
 			editor.timeline.getLastFrameTime(),
@@ -200,7 +205,14 @@ function PreviewCanvas({
 			draw: () => renderer.render({ node: renderTree, time: renderTime }),
 			onError: (error) => console.error("Preview render failed:", error),
 		});
-	}, [renderer, frameRenderer, renderTree, editor.playback, editor.timeline]);
+	}, [
+		renderer,
+		frameRenderer,
+		renderTree,
+		editor.playback,
+		editor.timeline,
+		isExporting,
+	]);
 
 	useRafLoop(render);
 

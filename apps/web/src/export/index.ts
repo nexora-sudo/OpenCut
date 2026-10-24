@@ -23,6 +23,8 @@ export interface ExportOptions {
 export interface ExportResult {
 	success: boolean;
 	buffer?: ArrayBuffer;
+	blob?: Blob;
+	cleanup?: () => Promise<void>;
 	error?: string;
 	cancelled?: boolean;
 }
@@ -30,6 +32,7 @@ export interface ExportResult {
 export interface ExportState {
 	isExporting: boolean;
 	progress: number;
+	stage?: string;
 	result: ExportResult | null;
 }
 
@@ -54,11 +57,12 @@ export function downloadBuffer({
 	filename,
 	mimeType,
 }: {
-	buffer: ArrayBuffer;
+	buffer: ArrayBuffer | Blob;
 	filename: string;
 	mimeType: string;
 }): void {
-	const blob = new Blob([buffer], { type: mimeType });
+	const blob =
+		buffer instanceof Blob ? buffer : new Blob([buffer], { type: mimeType });
 	const url = URL.createObjectURL(blob);
 	const downloadLink = document.createElement("a");
 	downloadLink.href = url;
@@ -66,5 +70,5 @@ export function downloadBuffer({
 	document.body.appendChild(downloadLink);
 	downloadLink.click();
 	document.body.removeChild(downloadLink);
-	URL.revokeObjectURL(url);
+	setTimeout(() => URL.revokeObjectURL(url), 60000);
 }

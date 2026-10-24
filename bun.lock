@@ -29,7 +29,7 @@
     },
     "apps/web": {
       "name": "@opencut/web",
-      "version": "0.1.0",
+      "version": "0.3.2",
       "dependencies": {
         "@hello-pangea/dnd": "^18.0.1",
         "@hugeicons/core-free-icons": "^3.3.0",
