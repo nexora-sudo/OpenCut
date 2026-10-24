@@ -5,6 +5,11 @@ export class PreviewFrameRenderer<Scene> {
 	private lastScene: Scene | null = null;
 	private lastFrame = -1;
 
+	invalidate() {
+		this.lastScene = null;
+		this.lastFrame = -1;
+	}
+
 	async render({
 		scene,
 		frame,

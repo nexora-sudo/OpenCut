@@ -21,10 +21,7 @@ import { mediaSupportsAudio } from "@/media/media-utils";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
 import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
 import { TICKS_PER_SECOND } from "@/wasm";
-import {
-	computeRmsBuckets,
-	type SampleBucket,
-} from "@/media/waveform-summary";
+import { computeRmsBuckets, type SampleBucket } from "@/media/waveform-summary";
 
 const MAX_AUDIO_CHANNELS = 2;
 const EXPORT_SAMPLE_RATE = 44100;
@@ -401,10 +398,12 @@ async function fetchLibraryAudioClip({
 	element,
 	muted,
 	volume,
+	strict = false,
 }: {
 	element: LibraryAudioElement;
 	muted: boolean;
 	volume: number;
+	strict?: boolean;
 }): Promise<AudioClipSource | null> {
 	try {
 		const response = await fetch(element.sourceUrl);
@@ -422,15 +421,16 @@ async function fetchLibraryAudioClip({
 			id: element.id,
 			sourceKey: element.id,
 			file,
-			startTime: element.startTime,
-			duration: element.duration,
-			trimStart: element.trimStart,
-			trimEnd: element.trimEnd,
+			startTime: element.startTime / TICKS_PER_SECOND,
+			duration: element.duration / TICKS_PER_SECOND,
+			trimStart: element.trimStart / TICKS_PER_SECOND,
+			trimEnd: element.trimEnd / TICKS_PER_SECOND,
 			volume,
 			muted,
 			retime: element.retime,
 		};
 	} catch (error) {
+		if (strict) throw error;
 		console.warn("Failed to fetch library audio:", error);
 		return null;
 	}
@@ -549,9 +549,11 @@ export async function collectAudioMixSources({
 export async function collectAudioClips({
 	tracks,
 	mediaAssets,
+	strict = false,
 }: {
 	tracks: SceneTracks;
 	mediaAssets: MediaAsset[];
+	strict?: boolean;
 }): Promise<AudioClipSource[]> {
 	const orderedTracks = [...tracks.overlay, tracks.main, ...tracks.audio];
 	const clips: AudioClipSource[] = [];
@@ -572,6 +574,7 @@ export async function collectAudioClips({
 			if (!doesElementHaveEnabledAudio({ element, mediaAsset })) continue;
 
 			const muted = isTrackMuted || isElementMuted({ element });
+			if (strict && muted) continue;
 			const volume = resolveEffectiveAudioGain({
 				element,
 				trackMuted: isTrackMuted,
@@ -593,7 +596,7 @@ export async function collectAudioClips({
 					);
 				} else {
 					pendingLibraryClips.push(
-						fetchLibraryAudioClip({ element, muted, volume }),
+						fetchLibraryAudioClip({ element, muted, volume, strict }),
 					);
 				}
 				continue;

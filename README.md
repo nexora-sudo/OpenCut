@@ -18,6 +18,16 @@ This fork welcomes community bug fixes, feature proposals and translation improv
 
 Search for existing requests before posting. Add reactions to ideas you support. Reports are reviewed by the maintainer; suggestions are not guaranteed to be implemented. See the [contribution guide](.github/CONTRIBUTING.md) for labels and the review process.
 
+## Project protection and export improvements (v0.3.2)
+
+The editor header shows whether changes are pending, saving, saved locally (with a time), or failed. Failed writes stay pending and can be retried. Exit waits for saving; use **Download backup** if browser storage fails.
+
+**Download backup** creates a `.opencut` file containing the project and uploaded media. Library music is included when it can be downloaded. In the projects page, choose **Restore backup** to open it as a new project, including in another browser. Existing projects are not overwritten. Keep a separate copy outside browser storage. Linked online assets such as fonts/sticker resources may still require internet access. This is file-based transfer; cloud accounts and project sharing by URL are not implemented.
+
+Export processes audio in small windows and streams the output to temporary browser disk storage when available. It reports codec/decode failures, its current stage, cancellation and stalled operations. If browser disk storage is unavailable, output falls back to memory and large exports still depend on available resources.
+
+See the [repeatable browser checks](scripts/qa/README.md) for test scope. MP4/WebM with synthetic video audio, music, cuts, text, Blur and a shape sticker were checked on Windows Chrome. A **20-minute 160×90, 1 fps** export with audio completed; this does not establish 20-minute 4K performance or confirm the macOS/Edge reports with their original files.
+
 ## Languages
 
 | Language                      | Locale  |
@@ -89,7 +99,7 @@ See the [original upstream README](README.upstream.md) for Docker, desktop and R
 
 ## Validation and contributions
 
-The language switch was tested locally with a project and media on the timeline, including after a page reload. Translation tests and the application TypeScript check passed. The complete upstream test suite still has existing WASM and timeline failures; a production build has not been validated.
+The language switch was tested locally with a project and media on the timeline, including after a page reload. Translation tests and the application TypeScript check passed. The complete upstream test suite still has existing WASM and timeline failures; the production build passed. See the [v0.3.2 validation report](docs/VALIDATION-0.3.2.md) for scope and remaining limits.
 
 Translation catalogs are in [`apps/web/src/i18n/messages`](apps/web/src/i18n/messages). For translation issues, include the language, affected screen and suggested wording.
 

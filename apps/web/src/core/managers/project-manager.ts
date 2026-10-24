@@ -136,6 +136,7 @@ export class ProjectManager {
 		}
 
 		this.editor.save.pause();
+		this.editor.save.reset();
 		await this.ensureStorageMigrations();
 		this.editor.media.clearAllAssets();
 		this.editor.scenes.clearScenes();
@@ -194,6 +195,7 @@ export class ProjectManager {
 		if (!this.active) return;
 
 		try {
+			const active = this.active;
 			const scenes = this.editor.scenes.getScenes();
 			const updatedProject = {
 				...this.active,
@@ -206,22 +208,28 @@ export class ProjectManager {
 			};
 
 			await storageService.saveProject({ project: updatedProject });
-			this.active = updatedProject;
+			if (this.active === active) this.active = updatedProject;
 			this.updateMetadata(updatedProject);
 		} catch (error) {
 			console.error("Failed to save project:", error);
+			throw error;
 		}
 	}
 
 	async export({ options }: { options: ExportOptions }): Promise<ExportResult> {
+		if (this.exportState.isExporting)
+			return {
+				success: false,
+				error: translate("An export is already running."),
+			};
 		this.exportCancelRequested = false;
 		this.exportState = { isExporting: true, progress: 0, result: null };
 		this.notify();
 
 		const result = await this.editor.renderer.exportProject({
 			options,
-			onProgress: ({ progress }) => {
-				this.exportState = { ...this.exportState, progress };
+			onProgress: ({ progress, stage }) => {
+				this.exportState = { ...this.exportState, progress, stage };
 				this.notify();
 			},
 			onCancel: () => this.exportCancelRequested,
@@ -541,15 +549,13 @@ export class ProjectManager {
 
 	async prepareExit(): Promise<void> {
 		if (!this.active) return;
-
+		this.editor.playback.pause();
 		try {
-			const didUpdateThumbnail = await this.updateThumbnailFromTimeline();
-			if (didUpdateThumbnail) {
-				await this.editor.save.flush();
-			}
+			await this.updateThumbnailFromTimeline();
 		} catch (error) {
-			console.error("Failed to generate project thumbnail on exit:", error);
+			console.warn("Thumbnail unavailable:", error);
 		}
+		await this.editor.save.flush();
 	}
 
 	getFilteredAndSortedProjects({

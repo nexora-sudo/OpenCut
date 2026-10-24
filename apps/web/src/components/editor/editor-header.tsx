@@ -27,6 +27,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ShortcutsDialog } from "@/actions/components/shortcuts-dialog";
 import Image from "next/image";
 import { cn } from "@/utils/ui";
+import { ProjectProtection } from "@/project/components/project-protection";
 import { LanguageSettings } from "@/i18n/settings-dialog";
 
 export function EditorHeader() {
@@ -35,6 +36,7 @@ export function EditorHeader() {
 			<div className="flex items-center gap-1">
 				<ProjectDropdown />
 				<EditableProjectName />
+				<ProjectProtection />
 			</div>
 			<nav className="flex items-center gap-2">
 				<LanguageSettings />
@@ -60,15 +62,18 @@ function ProjectDropdown() {
 	const handleExit = async () => {
 		if (isExiting) return;
 		setIsExiting(true);
-
 		try {
 			await editor.project.prepareExit();
 			editor.project.closeProject();
-		} catch (error) {
-			console.error("Failed to prepare project exit:", error);
-		} finally {
-			editor.project.closeProject();
 			router.push("/projects");
+		} catch (error) {
+			toast.error(
+				t(
+					"Project could not be saved. Stay here and create a backup before leaving.",
+				),
+			);
+			console.error("Failed to prepare project exit:", error);
+			setIsExiting(false);
 		}
 	};
 

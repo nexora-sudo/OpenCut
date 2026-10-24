@@ -69,6 +69,7 @@ import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
 import { cn } from "@/utils/ui";
 import { ChangelogNotification } from "@/changelog/components/changelog-notification";
+import { RestoreProjectBackup } from "@/project/components/project-protection";
 import { LanguageSettings } from "@/i18n/settings-dialog";
 const formatProjectDuration = ({
 	duration,
@@ -188,6 +189,7 @@ function ProjectsHeader() {
 				</div>
 
 				<div className="flex items-center gap-3 md:gap-4">
+					<RestoreProjectBackup />
 					<LanguageSettings />
 					<SearchBar className="hidden md:block" />
 					<NewProjectButton />

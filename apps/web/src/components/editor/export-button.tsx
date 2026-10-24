@@ -55,7 +55,8 @@ export function ExportButton() {
 	const handlePopoverOpenChange = ({ open }: { open: boolean }) => {
 		if (!open) {
 			editor.project.cancelExport();
-			editor.project.clearExportState();
+			if (!editor.project.getExportState().isExporting)
+				editor.project.clearExportState();
 		}
 		setIsExportPopoverOpen(open);
 	};
@@ -133,13 +134,14 @@ function ExportPopover({
 			return;
 		}
 
-		if (result.success && result.buffer) {
+		if (result.success && (result.buffer || result.blob)) {
 			downloadBuffer({
-				buffer: result.buffer,
+				buffer: result.blob ?? result.buffer!,
 				filename: `${activeProject.metadata.name}${getExportFileExtension({ format })}`,
 				mimeType: getExportMimeType({ format }),
 			});
 
+			if (result.cleanup) setTimeout(() => void result.cleanup!(), 60000);
 			editor.project.clearExportState();
 			onOpenChange(false);
 		}
@@ -282,6 +284,9 @@ function ExportPopover({
 										<p className="text-muted-foreground text-sm">100%</p>
 									</div>
 									<Progress value={progress * 100} className="w-full" />
+									<p role="status" className="text-muted-foreground text-xs">
+										{exportState.stage}
+									</p>
 								</div>
 
 								<Button

@@ -1,3 +1,5 @@
+import { exportStep } from "@/export/task";
+import { translate } from "@/i18n/translate";
 import type { FrameRate } from "opencut-wasm";
 import type { AnyBaseNode } from "./nodes/base-node";
 import { createCanvasSurface } from "./canvas-utils";
@@ -15,6 +17,8 @@ export type CanvasRendererParams = {
 	height: number;
 	fps: FrameRate;
 };
+
+let renderQueue: Promise<unknown> = Promise.resolve();
 
 export class CanvasRenderer {
 	canvas: OffscreenCanvas;
@@ -50,15 +54,45 @@ export class CanvasRenderer {
 		this.context = surface.context;
 	}
 
-	async render({ node, time }: { node: AnyBaseNode; time: number }) {
-		await measureSpanAsync({
-			name: "resolve",
-			fn: () => resolveRenderTree({ node, renderer: this, time }),
-		});
-		const { frame, textures } = await measureSpanAsync({
-			name: "buildFrame",
-			fn: () => buildFrameDescriptor({ node, renderer: this }),
-		});
+	async render(params: {
+		node: AnyBaseNode;
+		time: number;
+		signal?: AbortSignal;
+	}) {
+		const pending = renderQueue.then(() => this.renderFrame(params));
+		renderQueue = pending.catch(() => {});
+		return pending;
+	}
+
+	private async renderFrame({
+		node,
+		time,
+		signal,
+	}: {
+		node: AnyBaseNode;
+		time: number;
+		signal?: AbortSignal;
+	}) {
+		const prepare = async () => {
+			await measureSpanAsync({
+				name: "resolve",
+				fn: () => resolveRenderTree({ node, renderer: this, time }),
+			});
+			return measureSpanAsync({
+				name: "buildFrame",
+				fn: () => buildFrameDescriptor({ node, renderer: this }),
+			});
+		};
+		// Aborting an unresponsive decoder releases the shared render queue. A late
+		// preparation result must never draw over a resumed preview or a new export.
+		const { frame, textures } = signal
+			? await exportStep({
+					run: prepare,
+					label: translate("Rendering video"),
+					signal,
+				})
+			: await prepare();
+
 		wasmCompositor.ensureInitialized({
 			width: this.width,
 			height: this.height,

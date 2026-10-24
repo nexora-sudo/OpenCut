@@ -5,9 +5,8 @@ import type { ExportOptions, ExportResult } from "@/export";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
-import { createTimelineAudioBuffer } from "@/media/audio";
+import { ExportAudioRenderer } from "@/media/export-audio";
 import { formatTimecode } from "opencut-wasm";
-import { frameRateToFloat } from "@/fps/utils";
 import { downloadBlob } from "@/utils/browser";
 
 type SnapshotResult =
@@ -150,101 +149,80 @@ export class RendererManager {
 		onCancel,
 	}: {
 		options: ExportOptions;
-		onProgress?: ({ progress }: { progress: number }) => void;
+		onProgress?: ({
+			progress,
+			stage,
+		}: {
+			progress: number;
+			stage?: string;
+		}) => void;
 		onCancel?: () => boolean;
 	}): Promise<ExportResult> {
 		const { format, quality, fps, includeAudio } = options;
 
+		let audio: ExportAudioRenderer | undefined;
+		let exporter: SceneExporter | undefined;
+		const controller = new AbortController();
+		const cancelInterval = setInterval(() => {
+			if (onCancel?.()) {
+				controller.abort();
+				exporter?.cancel();
+			}
+		}, 100);
+		this.editor.playback.pause();
 		try {
 			const tracks = this.editor.scenes.getActiveScene().tracks;
 			const mediaAssets = this.editor.media.getAssets();
 			const activeProject = this.editor.project.getActive();
-
-			if (!activeProject) {
-				return { success: false, error: "No active project" };
-			}
-
+			if (!activeProject)
+				return { success: false, error: translate("No active project") };
 			const duration = this.editor.timeline.getTotalDuration();
-			if (duration === 0) {
-				return { success: false, error: "Project is empty" };
-			}
-
-			const exportFps = fps ?? activeProject.settings.fps;
-			const canvasSize = activeProject.settings.canvasSize;
-
-			let audioBuffer: AudioBuffer | null = null;
-			if (includeAudio) {
-				onProgress?.({ progress: 0.05 });
-				audioBuffer = await createTimelineAudioBuffer({
+			if (duration <= 0)
+				return { success: false, error: translate("Project is empty") };
+			onProgress?.({ progress: 0.01, stage: translate("Preparing audio") });
+			if (includeAudio)
+				audio = await ExportAudioRenderer.create({
 					tracks,
 					mediaAssets,
-					duration,
+					signal: controller.signal,
 				});
-			}
-
+			if (controller.signal.aborted) return { success: false, cancelled: true };
 			const scene = buildScene({
 				tracks,
 				mediaAssets,
 				duration,
-				canvasSize,
+				canvasSize: activeProject.settings.canvasSize,
 				background: activeProject.settings.background,
 			});
-
-			const exporter = new SceneExporter({
-				width: canvasSize.width,
-				height: canvasSize.height,
-				fps: exportFps,
+			exporter = new SceneExporter({
+				...activeProject.settings.canvasSize,
+				fps: fps ?? activeProject.settings.fps,
 				format,
 				quality,
-				shouldIncludeAudio: !!includeAudio,
-				audioBuffer: audioBuffer || undefined,
+				audio,
 			});
-
-			exporter.on("progress", (progress) => {
-				const adjustedProgress = includeAudio
-					? 0.05 + progress * 0.95
-					: progress;
-				onProgress?.({ progress: adjustedProgress });
-			});
-
-			let cancelled = false;
-			const checkCancel = () => {
-				if (onCancel?.()) {
-					cancelled = true;
-					exporter.cancel();
-				}
-			};
-
-			const cancelInterval = setInterval(checkCancel, 100);
-
-			try {
-				const buffer = await exporter.export({ rootNode: scene });
-				clearInterval(cancelInterval);
-
-				if (cancelled) {
-					return { success: false, cancelled: true };
-				}
-
-				if (!buffer) {
-					return { success: false, error: "Export failed to produce buffer" };
-				}
-
-				return {
-					success: true,
-					buffer,
-				};
-			} finally {
-				clearInterval(cancelInterval);
-			}
+			exporter.on("progress", (progress, stage) =>
+				onProgress?.({ progress: 0.02 + progress * 0.98, stage }),
+			);
+			return await exporter.export({ rootNode: scene });
 		} catch (error) {
+			if (controller.signal.aborted) return { success: false, cancelled: true };
 			console.error("Export failed:", error);
+			const message =
+				error instanceof Error
+					? error.message
+					: translate("Unknown export error");
 			return {
 				success: false,
-				error:
-					error instanceof Error
-						? error.message
-						: translate("Unknown export error"),
+				error: /allocation|out of memory|quota/i.test(message)
+					? translate(
+							"Not enough memory or disk space to export. Free some space, reduce resolution or export a shorter section.",
+						)
+					: message,
 			};
+		} finally {
+			clearInterval(cancelInterval);
+			await audio?.dispose();
 		}
 	}
 
