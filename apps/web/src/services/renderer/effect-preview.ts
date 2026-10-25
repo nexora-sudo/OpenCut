@@ -1,8 +1,7 @@
 import { createCanvasSurface } from "./canvas-utils";
-import { effectsRegistry, resolveEffectPasses } from "@/effects";
+import { effectsRegistry } from "@/effects";
 import { buildDefaultParamValues } from "@/params/registry";
 import type { ParamValues } from "@/params";
-import { gpuRenderer } from "./gpu-renderer";
 
 const PREVIEW_SIZE = 160;
 const PREVIEW_IMAGE_PATH = "/effects/preview.jpg";
@@ -58,21 +57,18 @@ class EffectPreviewService {
 					? params
 					: buildDefaultParamValues(definition.params);
 
-			const passes = resolveEffectPasses({
-				definition,
-				effectParams: resolvedParams,
-				width: uniformDimensions?.width ?? size,
-				height: uniformDimensions?.height ?? size,
-			});
-			const result = this.applyGpuEffect({
-				source,
-				width: size,
-				height: size,
-				passes,
-			});
-
-			targetCtx.drawImage(result, 0, 0, size, size);
+			// Thumbnails are native UI previews. They must never use the main
+			// compositor's GPU surface (on WebGL that is the visible video canvas).
+			targetCtx.filter =
+				definition.renderer.previewFilter?.({
+					effectParams: resolvedParams,
+					width: uniformDimensions?.width ?? size,
+					height: uniformDimensions?.height ?? size,
+				}) ?? "none";
+			targetCtx.drawImage(source, 0, 0, size, size);
+			targetCtx.filter = "none";
 		} catch (error) {
+			targetCtx.filter = "none";
 			console.warn("Failed to render effect preview", { effectType, error });
 			targetCtx.clearRect(0, 0, size, size);
 			targetCtx.drawImage(source, 0, 0, size, size);
@@ -126,25 +122,6 @@ class EffectPreviewService {
 			this.testSourceCanvas = this.createTestSource({ width, height });
 		}
 		return this.testSourceCanvas;
-	}
-
-	private applyGpuEffect({
-		source,
-		width,
-		height,
-		passes,
-	}: {
-		source: OffscreenCanvas;
-		width: number;
-		height: number;
-		passes: ReturnType<typeof resolveEffectPasses>;
-	}): OffscreenCanvas {
-		return gpuRenderer.applyEffect({
-			source,
-			width,
-			height,
-			passes,
-		});
 	}
 }
 

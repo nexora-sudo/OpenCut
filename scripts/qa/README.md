@@ -1,5 +1,11 @@
 # Local audiovisual regression checks
 
+## Version 0.3.4 playback regression
+
+Temporarily copy `playback-harness.tsx` to `apps/web/src/app/qa-playback/page.tsx` and open `/qa-playback` in development. It generates a moving 720p/30 fps source and places two cuts from the same file on the timeline. It renders a sequence through both transitions, records frame latency/source read counts, checks the actual blended pixels, decodes transition exports, and checks clip/scene grayscale through the editor command path. It also checks that rendering an effect thumbnail does not change the video compositor. The linked clean test project supports a real click-through check of effect application in the editor.
+
+This test exposed a pooled-canvas aliasing bug that the isolated 4 fps checks did not catch. Keep motion/normal-frame-rate coverage when changing decoder or transition code. **Remove the temporary route before committing or deploying.**
+
 ## Version 0.3.3 features
 
 Temporarily copy `features-033-harness.tsx` to `apps/web/src/app/qa-features/page.tsx`, start development, and open `/qa-features`. The button runs five real exports: 480p/720p/1080p/1440p WebM and 720p MP4. Synthetic video includes embedded 440 Hz audio, red and blue cuts and a white position marker. Checks compare the dissolve/slide midpoint pixels between preview and decoded output, clip and full-scene grayscale, exact output dimensions, audio energy during the transition, duration and backup persistence. Each source is only four visible seconds at 4 fps; this is a feature regression check, not a long-video performance benchmark.

@@ -24,7 +24,7 @@ import {
 } from "@/timeline";
 import { DEFAULTS } from "@/timeline/defaults";
 import type { MediaType } from "@/media/types";
-import { buildDefaultEffectInstance } from "@/effects";
+import { buildDefaultEffectInstance, effectsRegistry } from "@/effects";
 import { buildDefaultGraphicInstance } from "@/graphics";
 import type { ParamValues } from "@/params";
 import {
@@ -133,7 +133,7 @@ export function buildEffectElement({
 	const instance = buildDefaultEffectInstance({ effectType });
 	return {
 		type: "effect",
-		name: capitalizeFirstLetter({ string: instance.type }),
+		name: effectsRegistry.get(effectType).name,
 		effectType,
 		params: instance.params,
 		duration: duration ?? DEFAULT_NEW_ELEMENT_DURATION,
@@ -393,7 +393,10 @@ export function getElementFontFamilies({
 	const families = new Set<string>();
 	for (const track of [...tracks.overlay, tracks.main, ...tracks.audio]) {
 		for (const element of track.elements) {
-			if (element.type === "text" && typeof element.params.fontFamily === "string") {
+			if (
+				element.type === "text" &&
+				typeof element.params.fontFamily === "string"
+			) {
 				families.add(element.params.fontFamily);
 			}
 			if ("masks" in element) {

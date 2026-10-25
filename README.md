@@ -18,6 +18,12 @@ This fork welcomes community bug fixes, feature proposals and translation improv
 
 Search for existing requests before posting. Add reactions to ideas you support. Reports are reviewed by the maintainer; suggestions are not guaranteed to be implemented. See the [contribution guide](.github/CONTRIBUTING.md) for labels and the review process.
 
+## Transition and effect fixes (v0.3.4)
+
+Fixed a 30 fps playback/export regression where pooled decoder canvases made Dissolve show the outgoing clip unchanged and caused Slide left to stutter. Transitions now own a stable outgoing frame and track changing video pixels correctly. Effect thumbnails are clickable: apply to the selected visual clip, or to the entire project when none is selected. The preview moves to an off-screen selected clip so the result is visible immediately. Dragging still allows a custom effect range.
+
+See the [0.3.4 validation report](docs/VALIDATION-0.3.4.md), including a reproducible 720p/30 fps test and measured before/after results. Effect thumbnail rendering is isolated from the main compositor.
+
 ## Resolutions, transitions and languages (v0.3.3)
 
 Export offers **480p, 720p, 1080p and 1440p** with the actual output dimensions. The project aspect ratio is preserved: the selected resolution is the shorter edge for portrait videos. The project canvas and layout are not changed, and export scales the finished frame.

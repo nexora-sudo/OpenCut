@@ -24,6 +24,12 @@ export interface EffectPassTemplate {
 }
 
 export interface EffectRendererConfig {
+	/** Native UI thumbnail only; it must not draw into the shared compositor. */
+	previewFilter?: (params: {
+		effectParams: ParamValues;
+		width: number;
+		height: number;
+	}) => string;
 	passes: EffectPassTemplate[];
 	buildPasses?: (params: {
 		effectParams: ParamValues;

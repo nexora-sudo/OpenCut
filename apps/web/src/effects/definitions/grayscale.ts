@@ -16,6 +16,8 @@ export const grayscaleEffectDefinition: EffectDefinition = {
 		},
 	],
 	renderer: {
+		previewFilter: ({ effectParams }) =>
+			`grayscale(${Number(effectParams.intensity ?? 100)}%)`,
 		passes: [
 			{
 				shader: "grayscale",
