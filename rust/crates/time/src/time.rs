@@ -1,6 +1,9 @@
 mod frame_rate;
 mod media_time;
 mod timecode;
+mod editing;
+
+pub use editing::{ExportSize, ExportSizeOptions, get_export_size, TransitionOptions, TransitionState, get_transition_state};
 
 pub use frame_rate::FrameRate;
 pub use media_time::{
