@@ -1,4 +1,5 @@
 import { translate } from "@/i18n/translate";
+import { getExportSize } from "opencut-wasm";
 import type { EditorCore } from "@/core";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import type { ExportOptions, ExportResult } from "@/export";
@@ -158,7 +159,7 @@ export class RendererManager {
 		}) => void;
 		onCancel?: () => boolean;
 	}): Promise<ExportResult> {
-		const { format, quality, fps, includeAudio } = options;
+		const { format, quality, resolution, fps, includeAudio } = options;
 
 		let audio: ExportAudioRenderer | undefined;
 		let exporter: SceneExporter | undefined;
@@ -179,6 +180,15 @@ export class RendererManager {
 			const duration = this.editor.timeline.getTotalDuration();
 			if (duration <= 0)
 				return { success: false, error: translate("Project is empty") };
+			const sourceSize = activeProject.settings.canvasSize;
+			const outputSize = resolution
+				? getExportSize({ ...sourceSize, resolution })
+				: sourceSize;
+			if (!outputSize)
+				return {
+					success: false,
+					error: translate("Invalid export resolution or project dimensions."),
+				};
 			onProgress?.({ progress: 0.01, stage: translate("Preparing audio") });
 			if (includeAudio)
 				audio = await ExportAudioRenderer.create({
@@ -195,7 +205,8 @@ export class RendererManager {
 				background: activeProject.settings.background,
 			});
 			exporter = new SceneExporter({
-				...activeProject.settings.canvasSize,
+				...outputSize,
+				sourceSize,
 				fps: fps ?? activeProject.settings.fps,
 				format,
 				quality,

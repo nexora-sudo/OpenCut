@@ -47,11 +47,12 @@ export class SceneExporter extends EventEmitter<{
 			fps: FrameRate;
 			format: ExportFormat;
 			quality: ExportQuality;
+			sourceSize?: { width: number; height: number };
 			audio?: ExportAudioRenderer;
 		},
 	) {
 		super();
-		this.renderer = new CanvasRenderer(options);
+		this.renderer = new CanvasRenderer({ ...options, ...options.sourceSize });
 	}
 	cancel() {
 		this.controller.abort();
@@ -71,8 +72,8 @@ export class SceneExporter extends EventEmitter<{
 		try {
 			const codec = this.options.format === "webm" ? "vp9" : "avc";
 			const encoding = {
-				width: this.renderer.width,
-				height: this.renderer.height,
+				width: this.options.width,
+				height: this.options.height,
 				bitrate: qualityMap[this.options.quality],
 			};
 			const hardwareAcceleration = (await step(
@@ -135,7 +136,23 @@ export class SceneExporter extends EventEmitter<{
 						: new Mp4OutputFormat({ fastStart: false }),
 				target: destination.target,
 			});
-			const video = new CanvasSource(this.renderer.getOutputCanvas(), {
+			const renderedCanvas = this.renderer.getOutputCanvas();
+			const needsResize =
+				this.options.width !== this.renderer.width ||
+				this.options.height !== this.renderer.height;
+			const outputCanvas = needsResize
+				? document.createElement("canvas")
+				: renderedCanvas;
+			if (needsResize) {
+				outputCanvas.width = this.options.width;
+				outputCanvas.height = this.options.height;
+			}
+			const resizeContext = needsResize
+				? (outputCanvas.getContext("2d") as CanvasRenderingContext2D | null)
+				: null;
+			if (needsResize && !resizeContext)
+				throw new Error(translate("Failed to resize export canvas."));
+			const video = new CanvasSource(outputCanvas, {
 				codec,
 				bitrate: qualityMap[this.options.quality],
 				hardwareAcceleration,
@@ -182,6 +199,21 @@ export class SceneExporter extends EventEmitter<{
 						signal,
 					}),
 				);
+				if (resizeContext) {
+					resizeContext.clearRect(
+						0,
+						0,
+						outputCanvas.width,
+						outputCanvas.height,
+					);
+					resizeContext.drawImage(
+						renderedCanvas,
+						0,
+						0,
+						outputCanvas.width,
+						outputCanvas.height,
+					);
+				}
 				await step(translate("Encoding video"), () =>
 					video.add(seconds, Math.min(1 / fps, duration - seconds)),
 				);

@@ -9,6 +9,7 @@ import { GraphicNode } from "./nodes/graphic-node";
 import { ColorNode } from "./nodes/color-node";
 import { BlurBackgroundNode } from "./nodes/blur-background-node";
 import { EffectLayerNode } from "./nodes/effect-layer-node";
+import { TransitionNode } from "./nodes/transition-node";
 import type { AnyBaseNode } from "./nodes/base-node";
 import type { TBackground, TCanvasSize } from "@/project/types";
 import { DEFAULT_BACKGROUND_BLUR_INTENSITY } from "@/background/blur";
@@ -45,8 +46,10 @@ function buildTrackNodes({
 
 	for (const track of tracks) {
 		const elements = getVisibleSortedElements({ track });
+		const nodesById = new Map<string, VideoNode | ImageNode>();
 
 		for (const element of elements) {
+			const nodeIndex = nodes.length;
 			if (element.type === "effect") {
 				nodes.push(
 					new EffectLayerNode({
@@ -159,6 +162,31 @@ function buildTrackNodes({
 					}),
 				);
 			}
+			const addedNode = nodes[nodeIndex];
+			if (addedNode instanceof VideoNode || addedNode instanceof ImageNode) {
+				nodesById.set(element.id, addedNode);
+			}
+		}
+		for (let index = 1; index < elements.length; index++) {
+			const element = elements[index];
+			if (element.type !== "video" && element.type !== "image") continue;
+			const transition = element.transitionIn;
+			const previous = elements[index - 1];
+			if (
+				!transition ||
+				transition.fromElementId !== previous.id ||
+				!["dissolve", "slide-left"].includes(transition.type)
+			)
+				continue;
+			const to = nodesById.get(element.id);
+			const previousNode = nodesById.get(previous.id);
+			if (!to || !previousNode) continue;
+			const from =
+				previousNode instanceof VideoNode
+					? new VideoNode({ ...previousNode.params })
+					: new ImageNode({ ...previousNode.params });
+			const nodeIndex = nodes.indexOf(to);
+			nodes[nodeIndex] = new TransitionNode({ from, to, transition });
 		}
 	}
 

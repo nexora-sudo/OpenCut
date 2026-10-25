@@ -23,9 +23,9 @@ import {
 import { Check, Copy, Download, RotateCcw } from "lucide-react";
 import {
 	EXPORT_FORMAT_VALUES,
-	EXPORT_QUALITY_VALUES,
+	EXPORT_RESOLUTIONS,
 	type ExportFormat,
-	type ExportQuality,
+	type ExportResolution,
 } from "@/export";
 import {
 	Section,
@@ -35,13 +35,14 @@ import {
 } from "@/components/section";
 import { useEditor } from "@/editor/use-editor";
 import { DEFAULT_EXPORT_OPTIONS } from "@/export/defaults";
+import { getExportSize } from "opencut-wasm";
 
 function isExportFormat(value: string): value is ExportFormat {
 	return EXPORT_FORMAT_VALUES.some((formatValue) => formatValue === value);
 }
 
-function isExportQuality(value: string): value is ExportQuality {
-	return EXPORT_QUALITY_VALUES.some((qualityValue) => qualityValue === value);
+function isExportResolution(value: number): value is ExportResolution {
+	return EXPORT_RESOLUTIONS.some((resolution) => resolution === value);
 }
 
 export function ExportButton() {
@@ -84,7 +85,9 @@ export function ExportButton() {
 				>
 					<div className="relative flex items-center gap-1.5 rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7] px-4 py-1 shadow-[0_1px_3px_0px_rgba(0,0,0,0.65)]">
 						<HugeiconsIcon icon={TransitionTopIcon} className="z-50 size-3.5" />
-						<span className="z-50 text-[0.875rem]">{t("Export")}</span>
+						<span className="z-50 whitespace-nowrap text-[0.875rem]">
+							{t("Export")}
+						</span>
 						<div className="absolute top-0 left-0 z-10 flex size-full items-center justify-center rounded-[0.6rem] bg-linear-to-t from-white/0 to-white/50">
 							<div className="absolute top-[0.08rem] z-50 h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7]"></div>
 						</div>
@@ -110,8 +113,8 @@ function ExportPopover({
 	const [format, setFormat] = useState<ExportFormat>(
 		DEFAULT_EXPORT_OPTIONS.format,
 	);
-	const [quality, setQuality] = useState<ExportQuality>(
-		DEFAULT_EXPORT_OPTIONS.quality,
+	const [resolution, setResolution] = useState<ExportResolution>(
+		DEFAULT_EXPORT_OPTIONS.resolution,
 	);
 	const [shouldIncludeAudio, setShouldIncludeAudio] = useState<boolean>(
 		DEFAULT_EXPORT_OPTIONS.includeAudio ?? true,
@@ -123,7 +126,8 @@ function ExportPopover({
 		const result = await editor.project.export({
 			options: {
 				format,
-				quality,
+				quality: DEFAULT_EXPORT_OPTIONS.quality,
+				resolution,
 				fps: activeProject.settings.fps,
 				includeAudio: shouldIncludeAudio,
 			},
@@ -203,44 +207,48 @@ function ExportPopover({
 										</SectionContent>
 									</Section>
 
-									<Section collapsible defaultOpen={false}>
+									<Section collapsible defaultOpen={true}>
 										<SectionHeader>
-											<SectionTitle>{t("Quality")}</SectionTitle>
+											<SectionTitle>{t("Resolution")}</SectionTitle>
 										</SectionHeader>
 										<SectionContent>
 											<RadioGroup
-												value={quality}
+												value={String(resolution)}
 												onValueChange={(value) => {
-													if (isExportQuality(value)) {
-														setQuality(value);
-													}
+													const selected = Number(value);
+													if (isExportResolution(selected))
+														setResolution(selected);
 												}}
 											>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="low" id="low" />
-													<Label htmlFor="low">
-														{t("Low - Smallest file size")}
-													</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="medium" id="medium" />
-													<Label htmlFor="medium">
-														{t("Medium - Balanced")}
-													</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="high" id="high" />
-													<Label htmlFor="high">
-														{t("High - Recommended")}
-													</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value="very_high" id="very_high" />
-													<Label htmlFor="very_high">
-														{t("Very high - Largest file size")}
-													</Label>
-												</div>
+												{EXPORT_RESOLUTIONS.map((value) => {
+													const size = getExportSize({
+														...activeProject.settings.canvasSize,
+														resolution: value,
+													});
+													return (
+														<div
+															key={value}
+															className="flex items-center space-x-2"
+														>
+															<RadioGroupItem
+																value={String(value)}
+																id={`resolution-${value}`}
+															/>
+															<Label htmlFor={`resolution-${value}`}>
+																{value}p{" "}
+																<span className="text-muted-foreground">
+																	{size ? `${size.width} × ${size.height}` : ""}
+																</span>
+															</Label>
+														</div>
+													);
+												})}
 											</RadioGroup>
+											<p className="text-muted-foreground mt-3 text-xs">
+												{t(
+													"Keeps the project aspect ratio. For portrait videos, the resolution sets the shorter side.",
+												)}
+											</p>
 										</SectionContent>
 									</Section>
 

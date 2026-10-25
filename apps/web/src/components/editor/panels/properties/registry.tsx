@@ -23,11 +23,31 @@ import {
 	DashboardSpeed02Icon,
 } from "@hugeicons/core-free-icons";
 import { ElementParamsTab } from "./components/element-params-tab";
-import { ClipEffectsTab, StandaloneEffectTab } from "@/effects/components/effects-tab";
+import {
+	ClipEffectsTab,
+	StandaloneEffectTab,
+} from "@/effects/components/effects-tab";
 import { MasksTab } from "@/masks/components/masks-tab";
 import { SpeedTab } from "@/speed/components/speed-tab";
 import { GraphicTab } from "@/graphics/components/graphic-tab";
 import { OcShapesIcon } from "@/components/icons";
+import { ArrowLeftRight } from "lucide-react";
+import { TransitionControls } from "@/transitions/components/transitions-view";
+
+function buildTransitionsTab({
+	element,
+}: {
+	element: VideoElement | ImageElement;
+}): PropertiesTabDef {
+	return {
+		id: "transitions",
+		label: "Transitions",
+		icon: <ArrowLeftRight size={16} />,
+		content: ({ trackId }) => (
+			<TransitionControls element={element} trackId={trackId} />
+		),
+	};
+}
 
 const TRANSFORM_PARAM_KEYS = [
 	"transform.positionX",
@@ -201,7 +221,9 @@ function buildGraphicTab({
 		id: "graphic",
 		label: "Graphic",
 		icon: <OcShapesIcon size={16} />,
-		content: ({ trackId }) => <GraphicTab element={element} trackId={trackId} />,
+		content: ({ trackId }) => (
+			<GraphicTab element={element} trackId={trackId} />
+		),
 	};
 }
 
@@ -249,6 +271,7 @@ function getVideoConfig({
 			buildTransformTab({ element }),
 			...(showAudioTab ? [buildAudioTab({ element })] : []),
 			buildSpeedTab({ element }),
+			buildTransitionsTab({ element }),
 			buildBlendingTab({ element }),
 			buildMasksTab({ element }),
 			buildClipEffectsTab({ element }),
@@ -265,6 +288,7 @@ function getImageConfig({
 		defaultTab: "transform",
 		tabs: [
 			buildTransformTab({ element }),
+			buildTransitionsTab({ element }),
 			buildBlendingTab({ element }),
 			buildMasksTab({ element }),
 			buildClipEffectsTab({ element }),

@@ -9,7 +9,7 @@
         "type": "markdown",
         "attributes":
           {
-            "value": "This is the independent nexora-sudo community fork of OpenCut Classic. You may write in Português, English or 简体中文. Search existing issues first. Do not include private media, credentials or personal data.",
+            "value": "This is the independent nexora-sudo community fork of OpenCut Classic. You may write in Português, English, 简体中文, 日本語 or other languages. Search existing issues first. Do not include private media, credentials or personal data.",
           },
       },
       {
@@ -18,7 +18,7 @@
         "attributes":
           {
             "label": "Language / Idioma",
-            "options": ["Português (Brasil)", "简体中文", "English"],
+            "options": ["Português (Brasil)", "简体中文", "English", "日本語", "English (United Kingdom)"],
           },
         "validations": { "required": true },
       },
