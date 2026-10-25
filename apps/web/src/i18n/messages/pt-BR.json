@@ -1216,5 +1216,15 @@
 	"m47a21cfd": "A exportação agora oferece 480p, 720p, 1080p e 1440p com dimensões exatas em pixels, mantendo a proporção do projeto.",
 	"m1af21434": "Adicionadas as transições Dissolver e Deslizar para a esquerda entre clipes de vídeo ou imagem encostados, com controle de duração, remoção e desfazer.",
 	"md73c7e15": "Adicionado o efeito preto e branco ajustável para clipes e faixas de efeitos, na prévia e na exportação.",
-	"m9b93bc74": "Adicionados os idiomas japonês e inglês do Reino Unido, com os novos controles traduzidos nos cinco idiomas."
+	"m9b93bc74": "Adicionados os idiomas japonês e inglês do Reino Unido, com os novos controles traduzidos nos cinco idiomas.",
+	"m2a3e7ccf": "Aplicar {v0}",
+	"m9426f0d": "Aplicar ao clipe selecionado",
+	"m46d6124c": "Aplicar ao projeto inteiro",
+	"m65651": "Clique em um efeito para aplicar ao clipe selecionado ou ao projeto inteiro quando nenhum clipe estiver selecionado. Arraste para a linha do tempo para escolher um trecho.",
+	"m38c41094": "Transições mais fluidas e aplicação de efeitos",
+	"mf3751c82": "Corrige o reaproveitamento de quadros que quebrava as transições e permite aplicar efeitos clicando nas miniaturas.",
+	"m39e9defd": "Quadros estáveis nas transições, menos buscas no vídeo e efeitos com um clique.",
+	"m4a06f1be": "Dissolver e Deslizar para a esquerda agora preservam o quadro de saída, evitando decodificá-lo repetidamente e sobrescrever o quadro de entrada.",
+	"m2c35b220": "O cache de texturas acompanha a versão do quadro decodificado, e clipes que leem o mesmo arquivo preservam seus próprios tempos.",
+	"m588c79ac": "Clique na miniatura de um efeito para aplicar ao clipe selecionado ou ao projeto inteiro quando nenhum clipe visual estiver selecionado. As miniaturas não desenham mais no compositor do vídeo."
 }

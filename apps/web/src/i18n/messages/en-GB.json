@@ -1216,5 +1216,15 @@
 	"m47a21cfd": "Export now offers 480p, 720p, 1080p and 1440p with exact pixel dimensions while preserving the project aspect ratio.",
 	"m1af21434": "Added Dissolve and Slide left between adjacent video or image clips, with duration controls, removal and undo.",
 	"md73c7e15": "Added an adjustable black and white effect for clips and effect tracks, in preview and export.",
-	"m9b93bc74": "Added Japanese and English (United Kingdom) interface catalogs and translated the new controls in all five languages."
+	"m9b93bc74": "Added Japanese and English (United Kingdom) interface catalogs and translated the new controls in all five languages.",
+	"m2a3e7ccf": "Apply {v0}",
+	"m9426f0d": "Apply to selected clip",
+	"m46d6124c": "Apply to entire project",
+	"m65651": "Click an effect to apply it to the selected clip, or to the entire project when no clip is selected. Drag it to the timeline to choose a range.",
+	"m38c41094": "Smoother transitions and reliable effect application",
+	"mf3751c82": "Fixes pooled video frames breaking transitions and makes effect thumbnails directly applicable.",
+	"m39e9defd": "Stable transition frames, fewer decoder seeks and one-click effects.",
+	"m4a06f1be": "Dissolve and Slide left now keep a stable outgoing frame instead of decoding it repeatedly and overwriting the incoming frame.",
+	"m2c35b220": "Video texture caching now tracks the decoded frame version, and simultaneous clip requests from one file keep their own source times.",
+	"m588c79ac": "Click an effect thumbnail to apply it to the selected clip, or to the whole project when no visual clip is selected. Effect previews no longer draw into the video compositor."
 }

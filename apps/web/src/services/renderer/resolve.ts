@@ -48,6 +48,7 @@ import { TransitionNode } from "./nodes/transition-node";
 import { getTransitionState } from "opencut-wasm";
 import { TICKS_PER_SECOND } from "@/wasm";
 import { frameRateToFloat } from "@/fps/utils";
+import { createCanvasSurface } from "./canvas-utils";
 
 type ResolveContext = {
 	renderer: CanvasRenderer;
@@ -90,13 +91,31 @@ async function resolveNode({
 			time: context.time,
 			frameDuration: TICKS_PER_SECOND / frameRateToFloat(context.renderer.fps),
 		});
-		await resolveNode({ node: to, context });
 		if (node.resolved.active) {
-			await resolveNode({
-				node: from,
-				context: { ...context, time: node.resolved.fromTime },
-			});
-		} else from.resolved = null;
+			if (!node.frozenFrom) {
+				await resolveNode({
+					node: from,
+					context: { ...context, time: node.resolved.fromTime },
+				});
+				if (from.resolved) {
+					const {
+						sourceWidth: width,
+						sourceHeight: height,
+						source,
+					} = from.resolved;
+					const snapshot = createCanvasSurface({ width, height });
+					snapshot.context.drawImage(source, 0, 0, width, height);
+					node.frozenFrom = { ...from.resolved, source: snapshot.canvas };
+				}
+			}
+			from.resolved = node.frozenFrom;
+		} else {
+			node.frozenFrom = null;
+			from.resolved = null;
+		}
+		// Resolve the incoming clip after copying the outgoing frame. Reversing
+		// these operations lets CanvasSink overwrite both layers with one frame.
+		await resolveNode({ node: to, context });
 		return;
 	}
 	if (node instanceof VideoNode) {
@@ -250,6 +269,7 @@ async function resolveVideoNode({
 	return {
 		...visualState,
 		source: frame.canvas,
+		sourceVersion: frame.timestamp,
 		sourceWidth: frame.canvas.width,
 		sourceHeight: frame.canvas.height,
 	};

@@ -36,6 +36,7 @@ type RenderedCacheEntry = {
 type ExternalCacheEntry = {
 	kind: "external";
 	source: CanvasImageSource;
+	contentVersion?: number;
 	width: number;
 	height: number;
 };
@@ -92,7 +93,15 @@ class WasmCompositor {
 		renderFrame(serializeFrame(frame));
 		if (isRenderPerfEnabled()) {
 			recordWasmFrameProfile(
-				getLastFrameProfile() as Array<{ name: string; durationMs: number }>,
+				getLastFrameProfile().filter(
+					(entry: unknown): entry is { name: string; durationMs: number } =>
+						typeof entry === "object" &&
+						entry !== null &&
+						"name" in entry &&
+						typeof entry.name === "string" &&
+						"durationMs" in entry &&
+						typeof entry.durationMs === "number",
+				),
 			);
 		}
 	}
@@ -102,6 +111,12 @@ class WasmCompositor {
 		if (
 			previous?.kind === "external" &&
 			previous.source === texture.source &&
+			previous.contentVersion === texture.contentVersion &&
+			(!(
+				texture.source instanceof HTMLCanvasElement ||
+				texture.source instanceof OffscreenCanvas
+			) ||
+				texture.contentVersion !== undefined) &&
 			previous.width === texture.width &&
 			previous.height === texture.height
 		) {
@@ -128,6 +143,7 @@ class WasmCompositor {
 		this.cache.set(texture.id, {
 			kind: "external",
 			source: texture.source,
+			contentVersion: texture.contentVersion,
 			width: texture.width,
 			height: texture.height,
 		});
