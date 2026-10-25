@@ -1,5 +1,13 @@
 # Local audiovisual regression checks
 
+## Version 0.3.3 features
+
+Temporarily copy `features-033-harness.tsx` to `apps/web/src/app/qa-features/page.tsx`, start development, and open `/qa-features`. The button runs five real exports: 480p/720p/1080p/1440p WebM and 720p MP4. Synthetic video includes embedded 440 Hz audio, red and blue cuts and a white position marker. Checks compare the dissolve/slide midpoint pixels between preview and decoded output, clip and full-scene grayscale, exact output dimensions, audio energy during the transition, duration and backup persistence. Each source is only four visible seconds at 4 fps; this is a feature regression check, not a long-video performance benchmark.
+
+The resulting test project can be opened to check transition duration, removal/undo, resolution labels and language switching through the UI. **Remove the temporary route before committing or deploying.**
+
+## Version 0.3.2 audiovisual regression
+
 This harness generates synthetic media (440 Hz embedded audio and 880 Hz library music), calls the real browser codec/render/export pipeline, decodes the exported file, and validates duration, audio energy/frequencies, cut gaps, frame colors and portable project data. It does not use personal media or upload data.
 
 1. Copy `scripts/qa/export-harness.tsx` to a new local file `apps/web/src/app/qa-export/page.tsx` (create the directory first).

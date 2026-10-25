@@ -12,10 +12,13 @@ export const EXPORT_FORMAT_VALUES = ["mp4", "webm"] as const;
 
 export type ExportFormat = (typeof EXPORT_FORMAT_VALUES)[number];
 export type ExportQuality = (typeof EXPORT_QUALITY_VALUES)[number];
+export const EXPORT_RESOLUTIONS = [480, 720, 1080, 1440] as const;
+export type ExportResolution = (typeof EXPORT_RESOLUTIONS)[number];
 
 export interface ExportOptions {
 	format: ExportFormat;
 	quality: ExportQuality;
+	resolution?: ExportResolution;
 	fps?: FrameRate;
 	includeAudio?: boolean;
 }

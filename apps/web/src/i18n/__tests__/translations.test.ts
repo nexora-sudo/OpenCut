@@ -45,8 +45,23 @@ describe("interface translations", () => {
 	});
 
 	test("rejects unsupported locale values", () => {
+		expect(resolveLocale("ja")).toBe("ja");
+		expect(resolveLocale("en-GB")).toBe("en-GB");
 		expect(resolveLocale("zh-CN")).toBe("zh-CN");
 		expect(resolveLocale("invalid")).toBe("pt-BR");
 		expect(resolveLocale(undefined)).toBe("pt-BR");
+	});
+	test("Japanese and British English localize editor terminology", () => {
+		const ja = createTranslator("ja");
+		const uk = createTranslator("en-GB");
+		expect(ja("Settings")).toBe("設定");
+		expect(ja("Export")).toBe("書き出し");
+		expect(
+			ja("From {v0} to {v1}", { v0: "clip-A.mp4", v1: "clip-B.mp4" }),
+		).toBe("clip-A.mp4からclip-B.mp4へ");
+		expect(uk("Color")).toBe("Colour");
+		expect(uk("Favorites")).toBe("Favourites");
+		expect(uk("Center")).toBe("Centre");
+		expect(uk("Your Content, Your Rights")).toBe("Your Content, Your Rights");
 	});
 });

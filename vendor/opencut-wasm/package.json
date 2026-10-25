@@ -1,0 +1,20 @@
+{
+  "name": "opencut-wasm",
+  "version": "0.2.10-community.1",
+  "type": "module",
+  "files": [
+    "opencut_wasm_bg.wasm",
+    "opencut_wasm.js",
+    "opencut_wasm_bg.js",
+    "opencut_wasm.d.ts",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "opencut_wasm.js",
+  "types": "opencut_wasm.d.ts",
+  "sideEffects": [
+    "./opencut_wasm.js",
+    "./opencut_wasm_bg.js"
+  ],
+  "license": "MIT"
+}

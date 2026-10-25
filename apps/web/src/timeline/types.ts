@@ -3,6 +3,7 @@ import type { Effect } from "@/effects/types";
 import type { Mask } from "@/masks/types";
 import type { ParamValues } from "@/params";
 import type { MediaTime } from "@/wasm";
+import type { ClipTransition } from "@/transitions/types";
 
 export type ElementRef = {
 	trackId: string;
@@ -115,6 +116,7 @@ interface BaseTimelineElement {
 }
 
 export interface VideoElement extends BaseTimelineElement {
+	transitionIn?: ClipTransition;
 	type: "video";
 	mediaId: string;
 	isSourceAudioEnabled?: boolean;
@@ -125,6 +127,7 @@ export interface VideoElement extends BaseTimelineElement {
 }
 
 export interface ImageElement extends BaseTimelineElement {
+	transitionIn?: ClipTransition;
 	type: "image";
 	mediaId: string;
 	hidden?: boolean;

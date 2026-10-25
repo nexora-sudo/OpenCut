@@ -44,6 +44,10 @@ import type {
 	ResolvedVisualSourceNodeState,
 	VisualNodeParams,
 } from "./nodes/visual-node";
+import { TransitionNode } from "./nodes/transition-node";
+import { getTransitionState } from "opencut-wasm";
+import { TICKS_PER_SECOND } from "@/wasm";
+import { frameRateToFloat } from "@/fps/utils";
 
 type ResolveContext = {
 	renderer: CanvasRenderer;
@@ -75,6 +79,26 @@ async function resolveNode({
 	node: AnyBaseNode;
 	context: ResolveContext;
 }): Promise<void> {
+	if (node instanceof TransitionNode) {
+		const { from, to, transition } = node.params;
+		node.resolved = getTransitionState({
+			previousStart: from.params.timeOffset,
+			previousDuration: from.params.duration,
+			start: to.params.timeOffset,
+			duration: to.params.duration,
+			requestedDuration: transition.duration,
+			time: context.time,
+			frameDuration: TICKS_PER_SECOND / frameRateToFloat(context.renderer.fps),
+		});
+		await resolveNode({ node: to, context });
+		if (node.resolved.active) {
+			await resolveNode({
+				node: from,
+				context: { ...context, time: node.resolved.fromTime },
+			});
+		} else from.resolved = null;
+		return;
+	}
 	if (node instanceof VideoNode) {
 		node.resolved = await resolveVideoNode({ node, context });
 	} else if (node instanceof ImageNode) {
@@ -205,7 +229,9 @@ async function resolveVideoNode({
 	const frame = await videoCache.getFrameAt({
 		mediaId: node.params.mediaId,
 		file: node.params.file,
-		time: mediaTimeToSeconds({ time: roundMediaTime({ time: sourceTimeTicks }) }),
+		time: mediaTimeToSeconds({
+			time: roundMediaTime({ time: sourceTimeTicks }),
+		}),
 	});
 	if (!frame) {
 		return null;
@@ -426,7 +452,9 @@ async function resolveBackdropSource({
 		const frame = await videoCache.getFrameAt({
 			mediaId: node.params.mediaId,
 			file: node.params.file,
-			time: mediaTimeToSeconds({ time: roundMediaTime({ time: sourceTimeTicks }) }),
+			time: mediaTimeToSeconds({
+				time: roundMediaTime({ time: sourceTimeTicks }),
+			}),
 		});
 		if (!frame) {
 			return null;

@@ -1,8 +1,8 @@
 # OpenCut Classic — Community Edition
 
-An independent fork of [OpenCut Classic](https://github.com/OpenCut-app/opencut-classic), maintained by [nexora-sudo](https://github.com/nexora-sudo), with Portuguese and Simplified Chinese translations and an interface language selector.
+An independent fork of [OpenCut Classic](https://github.com/OpenCut-app/opencut-classic), maintained by [nexora-sudo](https://github.com/nexora-sudo), with Brazilian Portuguese, Simplified Chinese, English, Japanese and British English interface options.
 
-**Português:** editor de vídeo com interface em português do Brasil, chinês simplificado e inglês. Veja o [guia de teste local em português](LOCAL-TESTING.pt-BR.md).
+**Português:** editor de vídeo com interface em português do Brasil, chinês simplificado, inglês, japonês e inglês do Reino Unido. Veja o [guia de teste local em português](LOCAL-TESTING.pt-BR.md).
 
 This fork uses the original Classic editor. Upstream Classic is archived; the [OpenCut rewrite](https://github.com/OpenCut-app/OpenCut) is a different codebase. This is an independent community project, not an official OpenCut release.
 
@@ -17,6 +17,18 @@ This fork welcomes community bug fixes, feature proposals and translation improv
 - [Contribute code or documentation](.github/CONTRIBUTING.md)
 
 Search for existing requests before posting. Add reactions to ideas you support. Reports are reviewed by the maintainer; suggestions are not guaranteed to be implemented. See the [contribution guide](.github/CONTRIBUTING.md) for labels and the review process.
+
+## Resolutions, transitions and languages (v0.3.3)
+
+Export offers **480p, 720p, 1080p and 1440p** with the actual output dimensions. The project aspect ratio is preserved: the selected resolution is the shorter edge for portrait videos. The project canvas and layout are not changed, and export scales the finished frame.
+
+Select the **second of two touching video/image clips on the same track**, then open **Transitions** in the asset panel or clip properties. Choose **Dissolve** or **Slide left**, adjust the duration, or remove the transition. Changes support undo. These visual transitions use the previous clip’s final visible frame; they do not change project length, reveal trimmed footage or crossfade audio. Duration is limited to half of either adjacent clip; moving clips apart disables the transition.
+
+**Black and white** is available in Effects, with adjustable intensity. Apply it to a clip or add an effect track. Preview and export use the same Rust GPU shader. Japanese and English (United Kingdom) are selectable in language settings.
+
+See the [0.3.3 validation report](docs/VALIDATION-0.3.3.md) for test scope and limitations.
+
+The community WASM build is included in `vendor/opencut-wasm`; normal local setup and Vercel builds do not need Rust. See its README for reproducible build instructions and provenance.
 
 ## Project protection and export improvements (v0.3.2)
 
@@ -35,10 +47,12 @@ See the [repeatable browser checks](scripts/qa/README.md) for test scope. MP4/We
 | Português (Brasil) — default  | `pt-BR` |
 | 简体中文 — Simplified Chinese | `zh-CN` |
 | English                       | `en`    |
+| 日本語 — Japanese             | `ja`    |
+| English (United Kingdom)      | `en-GB` |
 
 Open the **gear icon** in the projects page or editor header, or select **Settings → Language** in the editor sidebar. Your preference is saved in this browser for future visits.
 
-Translations cover interface labels, dialogs, shortcuts, known messages, informational pages and included release notes. Your project names, files and text remain as you entered them. External content, such as sound titles and externally supplied articles, keeps its original language. Translation corrections are welcome, especially review by native Chinese speakers.
+Translations cover interface labels, dialogs, shortcuts, known messages, informational pages and included release notes. Your project names, files and text remain as you entered them. External content, such as sound titles and externally supplied articles, keeps its original language. Translation corrections are welcome, especially review by native Chinese and Japanese speakers.
 
 ## Screenshots
 

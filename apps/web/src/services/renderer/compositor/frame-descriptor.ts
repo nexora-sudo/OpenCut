@@ -26,6 +26,7 @@ import type {
 	TextureUploadDescriptor,
 } from "./types";
 import { DEFAULT_GRAPHIC_SOURCE_SIZE } from "@/graphics";
+import { TransitionNode } from "../nodes/transition-node";
 
 export async function buildFrameDescriptor({
 	node,
@@ -77,6 +78,69 @@ async function collectNode({
 	items: FrameItemDescriptor[];
 	textures: Map<string, TextureUploadDescriptor>;
 }): Promise<void> {
+	if (node instanceof TransitionNode) {
+		if (!node.resolved?.active) {
+			await collectNode({
+				node: node.params.to,
+				renderer,
+				path: `${path}:to`,
+				items,
+				textures,
+			});
+			return;
+		}
+		const fromItems: FrameItemDescriptor[] = [];
+		const toItems: FrameItemDescriptor[] = [];
+		await collectNode({
+			node: node.params.from,
+			renderer,
+			path: `${path}:from`,
+			items: fromItems,
+			textures,
+		});
+		await collectNode({
+			node: node.params.to,
+			renderer,
+			path: `${path}:to`,
+			items: toItems,
+			textures,
+		});
+		const progress = node.resolved.progress;
+		if (node.params.transition.type === "dissolve") {
+			for (const item of toItems)
+				if (item.type === "layer") item.opacity *= progress;
+		} else {
+			const move = ({
+				layers,
+				offset,
+			}: {
+				layers: FrameItemDescriptor[];
+				offset: number;
+			}) => {
+				for (const item of layers) {
+					if (item.type !== "layer") continue;
+					item.transform.centerX += offset;
+					if (item.mask) {
+						const texture = textures.get(item.mask.textureId);
+						if (texture?.kind === "rendered") {
+							const draw = texture.draw;
+							texture.contentHash += `:slide=${offset}`;
+							texture.draw = (ctx) => {
+								ctx.save();
+								ctx.translate(offset, 0);
+								draw(ctx);
+								ctx.restore();
+							};
+						}
+					}
+				}
+			};
+			move({ layers: fromItems, offset: -progress * renderer.width });
+			move({ layers: toItems, offset: (1 - progress) * renderer.width });
+		}
+		items.push(...fromItems, ...toItems);
+		return;
+	}
 	if (node instanceof RootNode) {
 		for (let index = 0; index < node.children.length; index++) {
 			await collectNode({
