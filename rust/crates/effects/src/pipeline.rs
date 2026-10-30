@@ -11,6 +11,8 @@ const GAUSSIAN_BLUR_SHADER_ID: &str = "gaussian-blur";
 const GAUSSIAN_BLUR_SHADER_SOURCE: &str = include_str!("shaders/gaussian_blur.wgsl");
 const GRAYSCALE_SHADER_ID: &str = "grayscale";
 const GRAYSCALE_SHADER_SOURCE: &str = include_str!("shaders/grayscale.wgsl");
+const COLOUR_SHADER_ID: &str = "colour";
+const COLOUR_SHADER_SOURCE: &str = include_str!("shaders/colour.wgsl");
 
 pub struct ApplyEffectsOptions<'a> {
     pub source: &'a wgpu::Texture,
@@ -94,6 +96,7 @@ impl EffectPipeline {
         for (shader_id, shader_source) in [
             (GAUSSIAN_BLUR_SHADER_ID, GAUSSIAN_BLUR_SHADER_SOURCE),
             (GRAYSCALE_SHADER_ID, GRAYSCALE_SHADER_SOURCE),
+            (COLOUR_SHADER_ID, COLOUR_SHADER_SOURCE),
         ] {
             let shader_module = context.device().create_shader_module(wgpu::ShaderModuleDescriptor {
                 label: Some(shader_id),
@@ -272,6 +275,21 @@ fn pack_effect_uniforms(
     height: u32,
 ) -> Result<EffectUniformBuffer, EffectsError> {
     let shader = pass.shader.as_str();
+    if shader == COLOUR_SHADER_ID {
+        let amount = read_number_uniform(pass, "u_amount")?;
+        let mode = read_number_uniform(pass, "u_mode")?;
+        for uniform in pass.uniforms.keys() {
+            if uniform != "u_amount" && uniform != "u_mode" {
+                return Err(EffectsError::UnsupportedUniform { shader: shader.to_string(), uniform: uniform.clone() });
+            }
+        }
+        return Ok(EffectUniformBuffer {
+            resolution: [width as f32, height as f32],
+            direction: [0.0, 0.0],
+            scalars: [if amount.is_finite() { amount.clamp(0.0, 1.0) } else { 1.0 },
+                if mode.is_finite() { mode.round().clamp(0.0, 4.0) } else { 0.0 }, 0.0, 0.0],
+        });
+    }
     if shader == GRAYSCALE_SHADER_ID {
         let amount = read_number_uniform(pass, "u_amount")?;
         for uniform in pass.uniforms.keys() {
