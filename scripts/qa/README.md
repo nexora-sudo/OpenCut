@@ -29,3 +29,13 @@ Unit checks from the repository root:
 ```sh
 bun test apps/web/src/core/managers/__tests__/save-manager.test.ts apps/web/src/export/__tests__/task.test.ts apps/web/src/project/__tests__/backup.test.ts apps/web/src/preview/__tests__ apps/web/src/services/renderer/compositor/__tests__ apps/web/src/i18n
 ```
+
+## Version 0.4.0 creative tools and recovery
+
+Copy `features-040-harness.tsx` into a temporary `apps/web/src/app/qa-features040/page.tsx` and open that route in development. The synthetic 720p/30 fps source exercises two cuts of the same file, six moving transitions, five GPU color effects and 22 MP4/WebM exports. It compares intermediate decoded pixels, intensity-zero and disabled effects, and 440/880 Hz content in an optional audio crossfade. AAC container padding can extend a four-second MP4 to about 4.017 s.
+
+Copy `history-harness.tsx` to a temporary `apps/web/src/app/qa-history/page.tsx`. It uses real IndexedDB/OPFS, creates only its own QA projects, archives removed referenced media and restores an independent copy. Assertions verify the original editing state, restored clip and byte-for-byte media equality.
+
+The `export-040-harness.tsx` harness adds preview-scale checks and actual 15-minute MP4/WebM outputs at 128×72/10 fps. These have synthetic graphics without audio; they validate duration, continuous frame processing, progress, ETA, decoded first/last frames and quality independence, not real camera footage or 4K throughput.
+
+Copy harness files into routes instead of importing them from outside the workspace, so browser dependencies resolve from the web app. Remove every temporary QA route before building or publishing. See `docs/VALIDATION-0.4.0.md` for the full scope and limitations.

@@ -32,7 +32,17 @@ export interface ExportResult {
 	cancelled?: boolean;
 }
 
+export interface ExportStatistics {
+	encodedFrames: number;
+	totalFrames: number;
+	elapsedSeconds: number;
+	framesPerSecond: number;
+	/** Estimated remaining frame processing time; file finalization is separate. */
+	estimatedRemainingSeconds?: number;
+}
+
 export interface ExportState {
+	statistics?: ExportStatistics;
 	isExporting: boolean;
 	progress: number;
 	stage?: string;

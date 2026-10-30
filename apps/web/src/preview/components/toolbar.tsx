@@ -23,8 +23,7 @@ import {
 } from "@/components/ui/select";
 import { PREVIEW_ZOOM_PRESETS } from "@/preview/zoom";
 import { usePreviewViewport } from "./preview-viewport";
-import { GridPopover } from "./guide-popover";
-import { usePreviewStore } from "@/preview/preview-store";
+import { usePreviewStore, type PreviewQuality } from "@/preview/preview-store";
 import type { MediaTime } from "@/wasm";
 
 export function PreviewToolbar({
@@ -37,6 +36,7 @@ export function PreviewToolbar({
 			<TimecodeDisplay />
 			<PlayPauseButton />
 			<div className="justify-self-end flex items-center gap-2.5">
+				<QualitySelect />
 				<ZoomSelect />
 				<Separator orientation="vertical" className="h-4" />
 				{/* v0.4.0 */}
@@ -96,6 +96,40 @@ function TimecodeDisplay() {
 				})}
 			</span>
 		</div>
+	);
+}
+
+function QualitySelect() {
+	const t = useT();
+	const isExporting = useEditor((e) => e.project.getExportState().isExporting);
+	const quality = usePreviewStore((state) => state.quality);
+	const setQuality = usePreviewStore((state) => state.setQuality);
+	const labels: Record<PreviewQuality, string> = {
+		original: t("Original"),
+		half: "½",
+		quarter: "¼",
+	};
+	return (
+		<Select
+			value={quality}
+			disabled={isExporting}
+			onValueChange={(value) => {
+				if (value === "original" || value === "half" || value === "quarter")
+					setQuality(value);
+			}}
+		>
+			<SelectTrigger
+				aria-label={t("Preview quality")}
+				title={t("Preview quality only. Export resolution stays unchanged.")}
+			>
+				{labels[quality]}
+			</SelectTrigger>
+			<SelectContent>
+				<SelectItem value="original">{t("Original")}</SelectItem>
+				<SelectItem value="half">{t("Half resolution (½)")}</SelectItem>
+				<SelectItem value="quarter">{t("Quarter resolution (¼)")}</SelectItem>
+			</SelectContent>
+		</Select>
 	);
 }
 

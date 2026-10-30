@@ -5,6 +5,7 @@ import type { AnyBaseNode } from "./nodes/base-node";
 import { createCanvasSurface } from "./canvas-utils";
 import { buildFrameDescriptor } from "./compositor/frame-descriptor";
 import { wasmCompositor } from "./compositor/wasm-compositor";
+import { scaleFrameForPreview } from "./preview-resolution";
 import { resolveRenderTree } from "./resolve";
 import {
 	measureSpanAsync,
@@ -16,6 +17,8 @@ export type CanvasRendererParams = {
 	width: number;
 	height: number;
 	fps: FrameRate;
+	/** Presentation resolution only; scene coordinates stay in project pixels. */
+	renderScale?: number;
 };
 
 let renderQueue: Promise<unknown> = Promise.resolve();
@@ -26,11 +29,13 @@ export class CanvasRenderer {
 	width: number;
 	height: number;
 	fps: FrameRate;
+	private renderScale: number;
 
-	constructor({ width, height, fps }: CanvasRendererParams) {
+	constructor({ width, height, fps, renderScale = 1 }: CanvasRendererParams) {
 		this.width = width;
 		this.height = height;
 		this.fps = fps;
+		this.renderScale = renderScale;
 
 		const surface = createCanvasSurface({ width, height });
 		this.canvas = surface.canvas;
@@ -39,8 +44,8 @@ export class CanvasRenderer {
 
 	getOutputCanvas(): HTMLCanvasElement {
 		wasmCompositor.ensureInitialized({
-			width: this.width,
-			height: this.height,
+			width: Math.max(1, Math.round(this.width * this.renderScale)),
+			height: Math.max(1, Math.round(this.height * this.renderScale)),
 		});
 		return wasmCompositor.getCanvas();
 	}
@@ -85,7 +90,7 @@ export class CanvasRenderer {
 		};
 		// Aborting an unresponsive decoder releases the shared render queue. A late
 		// preparation result must never draw over a resumed preview or a new export.
-		const { frame, textures } = signal
+		const descriptor = signal
 			? await exportStep({
 					run: prepare,
 					label: translate("Rendering video"),
@@ -93,9 +98,14 @@ export class CanvasRenderer {
 				})
 			: await prepare();
 
+		const { frame, textures } = scaleFrameForPreview({
+			...descriptor,
+			scale: this.renderScale,
+		});
+
 		wasmCompositor.ensureInitialized({
-			width: this.width,
-			height: this.height,
+			width: Math.max(1, Math.round(this.width * this.renderScale)),
+			height: Math.max(1, Math.round(this.height * this.renderScale)),
 		});
 		measureSpanSync({
 			name: "syncTextures",

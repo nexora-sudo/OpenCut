@@ -4,6 +4,12 @@ import type { MediaAsset } from "@/media/types";
 import { IndexedDBAdapter } from "./indexeddb-adapter";
 import { OPFSAdapter } from "./opfs-adapter";
 import {
+	ProjectHistoryStorage,
+	getRevisionMediaIds,
+	type ProjectHistoryData,
+} from "./project-history";
+import { translate } from "@/i18n/translate";
+import {
 	type StorageCapacityCheckResult,
 	StorageQuotaExceededError,
 	evaluateStorageCapacity,
@@ -21,8 +27,12 @@ import {
 	migrations,
 	runStorageMigrations,
 } from "@/services/storage/migrations";
-import type { Bookmark, SceneTracks, TScene } from "@/timeline";
+import type { Bookmark, SceneTracks } from "@/timeline";
 import { roundMediaTime } from "@/wasm";
+
+function isStoredObject(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
 
 function normalizeBookmarks({ raw }: { raw: unknown }): Bookmark[] {
 	if (!Array.isArray(raw)) return [];
@@ -31,12 +41,8 @@ function normalizeBookmarks({ raw }: { raw: unknown }): Bookmark[] {
 			if (typeof item === "number") {
 				return { time: roundMediaTime({ time: item }) };
 			}
-			const obj = item as Record<string, unknown>;
-			if (
-				typeof obj !== "object" ||
-				obj === null ||
-				typeof obj.time !== "number"
-			) {
+			const obj: unknown = item;
+			if (!isStoredObject(obj) || typeof obj.time !== "number") {
 				return null;
 			}
 			return {
@@ -54,6 +60,14 @@ function normalizeBookmarks({ raw }: { raw: unknown }): Bookmark[] {
 class StorageService {
 	private projectsAdapter: IndexedDBAdapter<SerializedProject>;
 	private savedSoundsAdapter: IndexedDBAdapter<SavedSoundsData>;
+	private history = new ProjectHistoryStorage(
+		new IndexedDBAdapter<ProjectHistoryData>({
+			dbName: "video-editor-project-history",
+			storeName: "history",
+			version: 1,
+		}),
+	);
+	private historyWarnings = new Map<string, string>();
 	private config: StorageConfig;
 	private migrationsPromise: Promise<void> | null = null;
 
@@ -161,10 +175,27 @@ class StorageService {
 			timelineViewState: project.timelineViewState,
 		};
 
+		const previous = await this.projectsAdapter.get(project.metadata.id);
 		await this.projectsAdapter.set({
 			key: project.metadata.id,
 			value: serializedProject,
 		});
+		// A history failure must never prevent the main project from being saved.
+		if (previous) {
+			try {
+				if (await this.history.capture({ project: previous }))
+					await this.pruneHistoryMedia(project.metadata.id);
+				this.historyWarnings.delete(project.metadata.id);
+			} catch (error) {
+				console.warn("Project history unavailable", error);
+				this.historyWarnings.set(
+					project.metadata.id,
+					translate(
+						"Could not save editing history. Your current project was saved.",
+					),
+				);
+			}
+		}
 	}
 
 	async loadProject({
@@ -190,6 +221,10 @@ class StorageService {
 			return null;
 		}
 
+		return { project: this.deserializeProject(serializedProject) };
+	}
+
+	private deserializeProject(serializedProject: SerializedProject): TProject {
 		const scenes =
 			serializedProject.scenes?.map((scene) => ({
 				id: scene.id,
@@ -221,7 +256,73 @@ class StorageService {
 			timelineViewState: serializedProject.timelineViewState,
 		};
 
-		return { project };
+		return project;
+	}
+
+	getProjectHistoryWarning(projectId: string): string | null {
+		return this.historyWarnings.get(projectId) ?? null;
+	}
+
+	async listProjectHistory(projectId: string) {
+		return this.history.list(projectId);
+	}
+
+	async createProjectCheckpoint(projectId: string): Promise<void> {
+		const project = await this.projectsAdapter.get(projectId);
+		if (!project) throw new Error(translate("Project not found"));
+		if (await this.history.capture({ project, manual: true }))
+			await this.pruneHistoryMedia(projectId);
+		this.historyWarnings.delete(projectId);
+	}
+
+	async restoreProjectRevision({
+		projectId,
+		revisionId,
+		name,
+	}: {
+		projectId: string;
+		revisionId: string;
+		name: string;
+	}): Promise<string> {
+		const revision = (await this.history.list(projectId)).find(
+			(item) => item.id === revisionId,
+		);
+		if (!revision)
+			throw new Error(
+				translate("This editing snapshot is no longer available."),
+			);
+		const project = this.deserializeProject(structuredClone(revision.project));
+		const newId = crypto.randomUUID();
+		project.metadata = {
+			...project.metadata,
+			id: newId,
+			name,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		};
+		try {
+			// Publish metadata only after every required media file is copied.
+			for (const mediaId of getRevisionMediaIds(revision.project)) {
+				const asset = await this.loadMediaAsset({ projectId, id: mediaId });
+				if (!asset)
+					throw new Error(
+						translate(
+							"A media file needed by this snapshot is missing. Restore a portable backup instead.",
+						),
+					);
+				try {
+					await this.saveMediaAsset({ projectId: newId, mediaAsset: asset });
+				} finally {
+					if (asset.url) URL.revokeObjectURL(asset.url);
+				}
+			}
+			await this.saveProject({ project });
+			return newId;
+		} catch (error) {
+			await this.deleteProjectMedia({ projectId: newId }).catch(() => {});
+			await this.deleteProject({ id: newId }).catch(() => {});
+			throw error;
+		}
 	}
 
 	async loadAllProjects(): Promise<TProject[]> {
@@ -267,7 +368,11 @@ class StorageService {
 					time:
 						serializedProject.metadata.duration ??
 						getProjectDurationFromScenes({
-							scenes: (serializedProject.scenes ?? []) as unknown as TScene[],
+							scenes: (serializedProject.scenes ?? []).map((scene) => ({
+								...scene,
+								createdAt: new Date(scene.createdAt),
+								updatedAt: new Date(scene.updatedAt),
+							})),
 						}),
 				}),
 				createdAt: new Date(serializedProject.metadata.createdAt),
@@ -282,6 +387,8 @@ class StorageService {
 
 	async deleteProject({ id }: { id: string }): Promise<void> {
 		await this.projectsAdapter.remove(id);
+		await this.history.remove(id);
+		this.historyWarnings.delete(id);
 	}
 
 	async saveMediaAsset({
@@ -398,6 +505,8 @@ class StorageService {
 		const mediaItems: MediaAsset[] = [];
 
 		for (const id of mediaIds) {
+			const metadata = await mediaMetadataAdapter.get(id);
+			if (metadata?.historyOnly) continue;
 			const item = await this.loadMediaAsset({ projectId, id });
 			if (item) {
 				mediaItems.push(item);
@@ -405,6 +514,23 @@ class StorageService {
 		}
 
 		return mediaItems;
+	}
+
+	private async pruneHistoryMedia(projectId: string): Promise<void> {
+		const { mediaMetadataAdapter, mediaAssetsAdapter } =
+			this.getProjectMediaAdapters({ projectId });
+		const retained = new Set(
+			(await this.history.list(projectId)).flatMap((revision) => [
+				...getRevisionMediaIds(revision.project),
+			]),
+		);
+		for (const id of await mediaMetadataAdapter.list()) {
+			const metadata = await mediaMetadataAdapter.get(id);
+			if (metadata?.historyOnly && !retained.has(id)) {
+				await mediaAssetsAdapter.remove(id);
+				await mediaMetadataAdapter.remove(id);
+			}
+		}
 	}
 
 	async deleteMediaAsset({
@@ -417,6 +543,19 @@ class StorageService {
 		const { mediaMetadataAdapter, mediaAssetsAdapter } =
 			this.getProjectMediaAdapters({ projectId });
 
+		const savedProject = await this.projectsAdapter.get(projectId);
+		if (savedProject && getRevisionMediaIds(savedProject).has(id)) {
+			await this.history.capture({ project: savedProject, manual: true });
+		}
+		if (await this.history.referencesMedia({ projectId, mediaId: id })) {
+			const metadata = await mediaMetadataAdapter.get(id);
+			if (metadata)
+				await mediaMetadataAdapter.set({
+					key: id,
+					value: { ...metadata, historyOnly: true },
+				});
+			return;
+		}
 		await Promise.all([
 			mediaAssetsAdapter.remove(id),
 			mediaMetadataAdapter.remove(id),
@@ -439,6 +578,7 @@ class StorageService {
 
 	async clearAllData(): Promise<void> {
 		await this.projectsAdapter.clear();
+		await this.history.clear();
 		// project-specific media and timelines cleaned up when projects are deleted
 	}
 

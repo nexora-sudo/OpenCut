@@ -2,7 +2,7 @@ import { translate } from "@/i18n/translate";
 import { getExportSize } from "opencut-wasm";
 import type { EditorCore } from "@/core";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
-import type { ExportOptions, ExportResult } from "@/export";
+import type { ExportOptions, ExportResult, ExportStatistics } from "@/export";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
 import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { buildScene } from "@/services/renderer/scene-builder";
@@ -156,6 +156,7 @@ export class RendererManager {
 		}: {
 			progress: number;
 			stage?: string;
+			statistics?: ExportStatistics;
 		}) => void;
 		onCancel?: () => boolean;
 	}): Promise<ExportResult> {
@@ -212,8 +213,8 @@ export class RendererManager {
 				quality,
 				audio,
 			});
-			exporter.on("progress", (progress, stage) =>
-				onProgress?.({ progress: 0.02 + progress * 0.98, stage }),
+			exporter.on("progress", (progress, stage, statistics) =>
+				onProgress?.({ progress: 0.02 + progress * 0.98, stage, statistics }),
 			);
 			return await exporter.export({ rootNode: scene });
 		} catch (error) {

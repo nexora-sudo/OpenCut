@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/i18n/use-t";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ParamValues } from "@/params";
 import type { Effect } from "@/effects/types";
 import type { EffectElement, VisualElement } from "@/timeline";
@@ -36,6 +36,7 @@ export function StandaloneEffectTab({
 	trackId: string;
 }) {
 	const t = useT();
+	const editor = useEditor();
 
 	const { renderElement, previewUpdates, commit } = useElementPreview({
 		trackId,
@@ -47,7 +48,7 @@ export function StandaloneEffectTab({
 		id: element.id,
 		type: element.effectType,
 		params: element.params,
-		enabled: true,
+		enabled: element.enabled !== false,
 	};
 
 	const previewParam = (key: string) => (value: number | string | boolean) => {
@@ -66,6 +67,19 @@ export function StandaloneEffectTab({
 				renderParams={(renderElement as EffectElement).params}
 				previewParam={previewParam}
 				onCommit={commit}
+				onToggle={() =>
+					editor.timeline.updateElements({
+						updates: [
+							{
+								trackId,
+								elementId: element.id,
+								patch: { enabled: element.enabled === false },
+							},
+						],
+					})
+				}
+				onCompareStart={() => previewUpdates({ enabled: false })}
+				onCompareEnd={() => editor.timeline.discardPreview()}
 			/>
 		</div>
 	);
@@ -184,6 +198,16 @@ export function ClipEffectsTab({
 									renderParams={getRenderParams({ effectId: effect.id })}
 									previewParam={buildPreviewParam(effect.id)}
 									onCommit={commit}
+									onCompareStart={() =>
+										previewUpdates({
+											effects: effects.map((existing) =>
+												existing.id === effect.id
+													? { ...existing, enabled: false }
+													: existing,
+											),
+										})
+									}
+									onCompareEnd={() => editor.timeline.discardPreview()}
 									onToggle={() =>
 										editor.timeline.toggleClipEffect({
 											trackId,
@@ -244,6 +268,8 @@ function EffectSection({
 	onCommit,
 	onToggle,
 	onRemove,
+	onCompareStart,
+	onCompareEnd,
 }: {
 	effect: Effect;
 	renderParams: ParamValues;
@@ -251,8 +277,31 @@ function EffectSection({
 	onCommit: () => void;
 	onToggle?: () => void;
 	onRemove?: () => void;
+	onCompareStart?: () => void;
+	onCompareEnd?: () => void;
 }) {
 	const t = useT();
+	const [comparing, setComparing] = useState(false);
+	const compareEndRef = useRef(onCompareEnd);
+	useEffect(() => {
+		compareEndRef.current = onCompareEnd;
+	}, [onCompareEnd]);
+	useEffect(() => {
+		if (!comparing) return;
+		const end = () => {
+			compareEndRef.current?.();
+			setComparing(false);
+		};
+		window.addEventListener("pointerup", end);
+		window.addEventListener("pointercancel", end);
+		window.addEventListener("blur", end);
+		return () => {
+			window.removeEventListener("pointerup", end);
+			window.removeEventListener("pointercancel", end);
+			window.removeEventListener("blur", end);
+			compareEndRef.current?.();
+		};
+	}, [comparing]);
 
 	const definition = effectsRegistry.get(effect.type);
 
@@ -269,21 +318,24 @@ function EffectSection({
 							<Button
 								variant={effect.enabled ? "secondary" : "ghost"}
 								size="icon"
-								aria-label={t("Toggle {v0}", { v0: definition.name })}
+								aria-label={t("Toggle {v0}", { v0: t(definition.name) })}
 								onClick={onToggle}
+								aria-pressed={effect.enabled}
 							>
 								<HugeiconsIcon
 									icon={effect.enabled ? ViewIcon : ViewOffSlashIcon}
 								/>
 							</Button>
-							<Button
-								variant="ghost"
-								size="icon"
-								aria-label={t("Remove {v0}", { v0: definition.name })}
-								onClick={onRemove}
-							>
-								<HugeiconsIcon icon={Delete02Icon} />
-							</Button>
+							{onRemove && (
+								<Button
+									variant="ghost"
+									size="icon"
+									aria-label={t("Remove {v0}", { v0: t(definition.name) })}
+									onClick={onRemove}
+								>
+									<HugeiconsIcon icon={Delete02Icon} />
+								</Button>
+							)}
 						</div>
 					)
 				}
@@ -298,6 +350,40 @@ function EffectSection({
 				className={cn("p-0", onToggle && !effect.enabled && "opacity-50")}
 			>
 				<SectionFields>
+					{onCompareStart && (
+						<div className="px-4 py-2">
+							<Button
+								variant="outline"
+								size="sm"
+								disabled={!effect.enabled}
+								onPointerDown={() => {
+									onCompareStart();
+									setComparing(true);
+								}}
+								onKeyDown={(event) => {
+									if (
+										(event.key === " " || event.key === "Enter") &&
+										!event.repeat
+									) {
+										event.preventDefault();
+										onCompareStart();
+										setComparing(true);
+									}
+								}}
+								onKeyUp={() => {
+									onCompareEnd?.();
+									setComparing(false);
+								}}
+								onBlur={() => {
+									onCompareEnd?.();
+									setComparing(false);
+								}}
+								aria-pressed={comparing}
+							>
+								{t("Hold to compare before / after")}
+							</Button>
+						</div>
+					)}
 					{definition.params.map((param) => (
 						<div key={param.key} className="flex flex-col gap-3.5">
 							<div className="px-4">

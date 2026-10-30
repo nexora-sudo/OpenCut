@@ -297,6 +297,10 @@ export class VideoCache {
 	}
 
 	clearVideo({ mediaId }: { mediaId: string }): void {
+		for (const key of this.sinks.keys()) {
+			if (key.startsWith(`${mediaId}:transition-tail:`))
+				this.clearVideo({ mediaId: key });
+		}
 		const sinkData = this.sinks.get(mediaId);
 		if (sinkData) {
 			if (sinkData.iterator) {

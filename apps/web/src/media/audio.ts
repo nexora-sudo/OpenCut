@@ -21,6 +21,7 @@ import { mediaSupportsAudio } from "@/media/media-utils";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
 import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
 import { TICKS_PER_SECOND } from "@/wasm";
+import { getTransitionState } from "opencut-wasm";
 import { computeRmsBuckets, type SampleBucket } from "@/media/waveform-summary";
 
 const MAX_AUDIO_CHANNELS = 2;
@@ -358,6 +359,8 @@ export interface AudioClipSource {
 	volume: number;
 	muted: boolean;
 	retime?: RetimeConfig;
+	transitionFade?: { kind: "in" | "out"; duration: number };
+	gainTimeOffset?: number;
 }
 
 async function fetchLibraryAudioSource({
@@ -620,6 +623,63 @@ export async function collectAudioClips({
 	const resolvedLibraryClips = await Promise.all(pendingLibraryClips);
 	for (const clip of resolvedLibraryClips) {
 		if (clip) clips.push(clip);
+	}
+	// Overlay only enabled video audio; music tracks and muted/separated audio
+	// remain untouched. Outgoing tails are explicit extra scheduled sources.
+	for (const track of [...tracks.overlay, tracks.main]) {
+		if (track.type !== "video" || track.hidden || track.muted) continue;
+		const elements = track.elements
+			.filter((element) => !element.hidden)
+			.toSorted((a, b) => a.startTime - b.startTime);
+		for (let index = 1; index < elements.length; index++) {
+			const incoming = elements[index];
+			const previous = elements[index - 1];
+			if (incoming.type !== "video" || previous.type !== "video") continue;
+			const transition = incoming.transitionIn;
+			if (
+				!transition?.audioCrossfade ||
+				transition.fromElementId !== previous.id
+			)
+				continue;
+			// Curve retiming needs a separate envelope mapping; preserve its existing audio.
+			if (
+				(incoming.retime &&
+					"mode" in incoming.retime &&
+					incoming.retime.mode === "curve") ||
+				(previous.retime &&
+					"mode" in previous.retime &&
+					previous.retime.mode === "curve")
+			)
+				continue;
+			const from = clips.find((clip) => clip.id === previous.id && !clip.muted);
+			const to = clips.find((clip) => clip.id === incoming.id && !clip.muted);
+			if (!from || !to) continue;
+			const state = getTransitionState({
+				previousStart: previous.startTime,
+				previousDuration: previous.duration,
+				start: incoming.startTime,
+				duration: incoming.duration,
+				requestedDuration: transition.duration,
+				time: incoming.startTime,
+				frameDuration: 1,
+				moving: true,
+			});
+			const duration = state.duration / TICKS_PER_SECOND;
+			if (duration <= 0) continue;
+			to.transitionFade = { kind: "in", duration };
+			const offset = from.duration - duration;
+			clips.push({
+				...from,
+				id: `${from.id}:crossfade:${to.id}`,
+				startTime: to.startTime,
+				duration,
+				trimStart:
+					from.trimStart +
+					getSourceTimeAtClipTime({ clipTime: offset, retime: from.retime }),
+				gainTimeOffset: offset,
+				transitionFade: { kind: "out", duration },
+			});
+		}
 	}
 
 	return clips;

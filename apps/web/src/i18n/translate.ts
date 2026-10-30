@@ -11,6 +11,8 @@ import ptBR from "./messages/pt-BR.json";
 import zhCN from "./messages/zh-CN.json";
 import ja from "./messages/ja.json";
 import enGB from "./messages/en-GB.json";
+import es from "./messages/es.json";
+import fr from "./messages/fr.json";
 
 export type Messages = Record<string, string>;
 export type TranslationValues = Record<
@@ -23,6 +25,8 @@ export const catalogs: Record<Locale, Messages> = {
 	"zh-CN": zhCN,
 	ja,
 	"en-GB": enGB,
+	es,
+	fr,
 };
 
 const templatePatterns = Object.entries(en).flatMap(([id, source]) => {

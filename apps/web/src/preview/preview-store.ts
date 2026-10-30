@@ -4,9 +4,12 @@ import { isGuideId, type GuideId } from "@/guides";
 import { DEFAULT_GRID_CONFIG } from "@/guides/grid";
 import type { GridConfig } from "@/guides/types";
 
+export type PreviewQuality = "original" | "half" | "quarter";
+
 type PreviewOverlaysState = Record<string, boolean>;
 
 interface PersistedPreviewState {
+	quality?: PreviewQuality;
 	activeGuide?: string | null;
 	layoutGuide?: {
 		platform?: string | null;
@@ -16,6 +19,8 @@ interface PersistedPreviewState {
 }
 
 interface PreviewState {
+	quality: PreviewQuality;
+	setQuality: (quality: PreviewQuality) => void;
 	activeGuide: GuideId | null;
 	overlays: PreviewOverlaysState;
 	gridConfig: GridConfig;
@@ -46,9 +51,46 @@ function getPersistedActiveGuide(
 	return isGuideId(persistedGuide) ? persistedGuide : null;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
+
+function readPersistedState(value: unknown): PersistedPreviewState {
+	if (!isRecord(value)) return {};
+	const layout = isRecord(value.layoutGuide) ? value.layoutGuide : {};
+	const grid = isRecord(value.gridConfig) ? value.gridConfig : {};
+	return {
+		quality:
+			value.quality === "half" || value.quality === "quarter"
+				? value.quality
+				: "original",
+		activeGuide:
+			typeof value.activeGuide === "string" ? value.activeGuide : null,
+		layoutGuide: {
+			platform: typeof layout.platform === "string" ? layout.platform : null,
+		},
+		gridConfig: {
+			rows:
+				typeof grid.rows === "number" &&
+				Number.isFinite(grid.rows) &&
+				grid.rows > 0
+					? grid.rows
+					: DEFAULT_GRID_CONFIG.rows,
+			cols:
+				typeof grid.cols === "number" &&
+				Number.isFinite(grid.cols) &&
+				grid.cols > 0
+					? grid.cols
+					: DEFAULT_GRID_CONFIG.cols,
+		},
+	};
+}
+
 export const usePreviewStore = create<PreviewState>()(
 	persist(
 		(set) => ({
+			quality: "original",
+			setQuality: (quality) => set({ quality }),
 			activeGuide: null,
 			overlays: DEFAULT_PREVIEW_OVERLAYS,
 			gridConfig: DEFAULT_GRID_CONFIG,
@@ -81,11 +123,15 @@ export const usePreviewStore = create<PreviewState>()(
 		}),
 		{
 			name: "preview-settings",
-			version: 6,
+			version: 7,
 			migrate: (persistedState) => {
-				const state = persistedState as PersistedPreviewState | undefined;
+				const state = readPersistedState(persistedState);
 
 				return {
+					quality:
+						state?.quality === "half" || state?.quality === "quarter"
+							? state.quality
+							: "original",
 					activeGuide: getPersistedActiveGuide(state),
 					overlays: DEFAULT_PREVIEW_OVERLAYS,
 					gridConfig: {
@@ -95,6 +141,7 @@ export const usePreviewStore = create<PreviewState>()(
 				};
 			},
 			partialize: (state) => ({
+				quality: state.quality,
 				activeGuide: state.activeGuide,
 				overlays: state.overlays,
 				gridConfig: state.gridConfig,

@@ -1,6 +1,14 @@
 export const LOCALE_COOKIE = "opencut-locale";
 export const DEFAULT_LOCALE = "pt-BR";
-export const LOCALES = ["pt-BR", "zh-CN", "en", "ja", "en-GB"] as const;
+export const LOCALES = [
+	"pt-BR",
+	"zh-CN",
+	"en",
+	"ja",
+	"en-GB",
+	"es",
+	"fr",
+] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const LANGUAGE_NAMES: Record<Locale, string> = {
@@ -9,6 +17,8 @@ export const LANGUAGE_NAMES: Record<Locale, string> = {
 	en: "English",
 	ja: "日本語",
 	"en-GB": "English (United Kingdom)",
+	es: "Español",
+	fr: "Français",
 };
 
 export function isLocale(value: unknown): value is Locale {

@@ -47,6 +47,8 @@ describe("interface translations", () => {
 	test("rejects unsupported locale values", () => {
 		expect(resolveLocale("ja")).toBe("ja");
 		expect(resolveLocale("en-GB")).toBe("en-GB");
+		expect(resolveLocale("es")).toBe("es");
+		expect(resolveLocale("fr")).toBe("fr");
 		expect(resolveLocale("zh-CN")).toBe("zh-CN");
 		expect(resolveLocale("invalid")).toBe("pt-BR");
 		expect(resolveLocale(undefined)).toBe("pt-BR");
@@ -63,5 +65,21 @@ describe("interface translations", () => {
 		expect(uk("Favorites")).toBe("Favourites");
 		expect(uk("Center")).toBe("Centre");
 		expect(uk("Your Content, Your Rights")).toBe("Your Content, Your Rights");
+	});
+	test("Spanish and French translate recovery, preview and creative tools", () => {
+		const es = createTranslator("es");
+		const fr = createTranslator("fr");
+		expect(es("Settings")).toBe("Configuración");
+		expect(fr("Settings")).toBe("Paramètres");
+		expect(es("Editing history")).toBe("Historial de edición");
+		expect(fr("Editing history")).toBe("Historique de montage");
+		expect(es("Restore as new project")).toBe("Restaurar como proyecto nuevo");
+		expect(fr("Preview quality")).toBe("Qualité de l’aperçu");
+		expect(es("Warm")).toBe("Cálido");
+		expect(fr("Slide down")).toBe("Glissement vers le bas");
+		expect(fr("About {v0} remaining", { v0: "01:20" })).toBe(
+			"Environ 01:20 restantes",
+		);
+		expect(es("My project.mov")).toBe("My project.mov");
 	});
 });

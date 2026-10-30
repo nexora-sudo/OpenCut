@@ -4,9 +4,10 @@ import { clampRetimeRate, shouldMaintainPitch } from "@/retime/rate";
 import type { AudioClipSource } from "@/media/audio";
 import { createAudioContext, collectAudioClips } from "@/media/audio";
 import {
-	buildAudioGainAutomation,
 	hasAnimatedVolume,
+	resolveEffectiveAudioGain,
 } from "@/timeline/audio-state";
+import { scheduleAudioClipGain } from "@/media/transition-audio";
 import { createAudioMasteringChain } from "@/media/audio-mastering";
 import {
 	getClipTimeAtSourceTime,
@@ -225,7 +226,9 @@ export class AudioManager {
 		for (const source of this.queuedSources) {
 			try {
 				source.stop();
-			} catch {}
+			} catch {
+				/* Source may have already ended. */
+			}
 			source.disconnect();
 		}
 		this.queuedSources.clear();
@@ -291,18 +294,33 @@ export class AudioManager {
 			node.connect(clipGain);
 			clipGain.connect(this.masterGain ?? audioContext.destination);
 
-			const startTimestamp =
+			const bufferTimestamp =
 				this.playbackStartContextTime +
 				this.playbackLatencyCompensationSeconds +
 				(timelineTime - this.playbackStartTime);
+			const startTimestamp = Math.max(
+				bufferTimestamp,
+				this.playbackStartContextTime +
+					this.playbackLatencyCompensationSeconds +
+					clipStart -
+					this.playbackStartTime,
+			);
+			const initialOffset =
+				(startTimestamp - bufferTimestamp) * (node.playbackRate.value || 1);
+			if (initialOffset >= buffer.duration) {
+				node.disconnect();
+				clipGain.disconnect();
+				continue;
+			}
 
 			if (startTimestamp >= audioContext.currentTime) {
-				node.start(startTimestamp);
+				node.start(startTimestamp, initialOffset);
 				consecutiveDroppedBufferCount = 0;
 			} else {
-				const offset = audioContext.currentTime - startTimestamp;
-				if (offset < buffer.duration) {
-					node.start(audioContext.currentTime, offset);
+				const offset = audioContext.currentTime - bufferTimestamp;
+				const sourceOffset = offset * (node.playbackRate.value || 1);
+				if (sourceOffset < buffer.duration) {
+					node.start(audioContext.currentTime, sourceOffset);
 					consecutiveDroppedBufferCount = 0;
 				} else {
 					consecutiveDroppedBufferCount += 1;
@@ -329,6 +347,36 @@ export class AudioManager {
 					continue;
 				}
 			}
+			const actualStart = Math.max(startTimestamp, audioContext.currentTime);
+			const localStart = Math.max(
+				0,
+				timelineTime - clip.startTime + actualStart - bufferTimestamp,
+			);
+			const localEnd = Math.min(
+				clip.duration,
+				timelineTime -
+					clip.startTime +
+					buffer.duration / (node.playbackRate.value || 1),
+			);
+			scheduleAudioClipGain({
+				clip,
+				gain: clipGain.gain,
+				startTimestamp: actualStart,
+				fromLocalTime: localStart,
+				toLocalTime: Math.max(localStart, localEnd),
+				resolveBaseGain: hasAnimatedVolume({ element: clip.timelineElement })
+					? (localTime) =>
+							resolveEffectiveAudioGain({
+								element: clip.timelineElement,
+								localTime,
+							})
+					: undefined,
+			});
+			// A decoded buffer can straddle the cut. Never let its tail leak beyond
+			// the clip (the explicit crossfade source owns that interval).
+			node.stop(
+				Math.max(actualStart, bufferTimestamp + clipEnd - timelineTime),
+			);
 
 			this.queuedSources.add(node);
 			node.addEventListener("ended", () => {
@@ -407,6 +455,9 @@ export class AudioManager {
 			startTimestamp: actualStartTimestamp,
 			startLocalTime: actualClipOffset,
 		});
+		node.stop(
+			actualStartTimestamp + Math.max(0, clip.duration - actualClipOffset),
+		);
 
 		this.queuedSources.add(node);
 		node.addEventListener("ended", () => {
@@ -470,7 +521,8 @@ export class AudioManager {
 	}
 
 	private hasCurveRetime({ clip }: { clip: AudioClipSource }): boolean {
-		const mode = (clip.retime as { mode?: unknown } | undefined)?.mode;
+		const mode =
+			clip.retime && "mode" in clip.retime ? clip.retime.mode : undefined;
 		return mode === "curve";
 	}
 
@@ -487,34 +539,20 @@ export class AudioManager {
 		startTimestamp: number;
 		startLocalTime: number;
 	}): void {
-		clipGain.gain.cancelScheduledValues(startTimestamp);
-		clipGain.gain.setValueAtTime(clip.volume, startTimestamp);
-
-		if (!hasAnimatedVolume({ element: clip.timelineElement })) {
-			return;
-		}
-
-		const points = buildAudioGainAutomation({
-			element: clip.timelineElement,
+		scheduleAudioClipGain({
+			clip,
+			gain: clipGain.gain,
+			startTimestamp: Math.max(startTimestamp, audioContext.currentTime),
 			fromLocalTime: startLocalTime,
 			toLocalTime: clip.duration,
+			resolveBaseGain: hasAnimatedVolume({ element: clip.timelineElement })
+				? (localTime) =>
+						resolveEffectiveAudioGain({
+							element: clip.timelineElement,
+							localTime,
+						})
+				: undefined,
 		});
-
-		if (points.length === 0) {
-			return;
-		}
-
-		clipGain.gain.setValueAtTime(points[0].gain, startTimestamp);
-		for (let index = 1; index < points.length; index++) {
-			const point = points[index];
-			const pointTimestamp =
-				startTimestamp + (point.localTime - startLocalTime);
-			if (pointTimestamp < audioContext.currentTime) {
-				continue;
-			}
-
-			clipGain.gain.linearRampToValueAtTime(point.gain, pointTimestamp);
-		}
 	}
 
 	private buildPreparedClipCacheKey({

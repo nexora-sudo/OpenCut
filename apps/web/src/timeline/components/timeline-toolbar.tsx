@@ -55,10 +55,14 @@ export function TimelineToolbar({
 	zoomLevel,
 	minZoom,
 	setZoomLevel,
+	onFitProject,
+	onFitSelection,
 }: {
 	zoomLevel: number;
 	minZoom: number;
 	setZoomLevel: ({ zoom }: { zoom: number }) => void;
+	onFitProject: () => void;
+	onFitSelection: () => void;
 }) {
 	const handleZoom = ({ direction }: { direction: "in" | "out" }) => {
 		const newZoomLevel =
@@ -76,6 +80,8 @@ export function TimelineToolbar({
 				<SceneSelector />
 
 				<ToolbarRightSection
+					onFitProject={onFitProject}
+					onFitSelection={onFitSelection}
 					zoomLevel={zoomLevel}
 					minZoom={minZoom}
 					onZoomChange={(zoom) => setZoomLevel({ zoom })}
@@ -147,19 +153,19 @@ function ToolbarLeftSection() {
 			<TooltipProvider delayDuration={500}>
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
-					tooltip={t("Split element")}
+					tooltip={t("Split element (S)")}
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignLeftIcon} />}
-					tooltip={t("Split left")}
+					tooltip={t("Split and remove left (Q)")}
 					onClick={({ event }) => handleAction({ action: "split-left", event })}
 				/>
 
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={AlignRightIcon} />}
-					tooltip={t("Split right")}
+					tooltip={t("Split and remove right (W)")}
 					onClick={({ event }) =>
 						handleAction({ action: "split-right", event })
 					}
@@ -234,7 +240,7 @@ function ToolbarLeftSection() {
 				>
 					<ToolbarButton
 						icon={<HugeiconsIcon icon={Chart03Icon} />}
-						tooltip={graphEditor.tooltip}
+						tooltip={t(graphEditor.tooltip)}
 						disabled={!graphEditor.canOpen}
 						buttonWrapper={(button) =>
 							graphEditor.canOpen ? (
@@ -280,14 +286,19 @@ function ToolbarRightSection({
 	minZoom,
 	onZoomChange,
 	onZoom,
+	onFitProject,
+	onFitSelection,
 }: {
 	zoomLevel: number;
 	minZoom: number;
 	onZoomChange: (zoom: number) => void;
 	onZoom: (options: { direction: "in" | "out" }) => void;
+	onFitProject: () => void;
+	onFitSelection: () => void;
 }) {
 	const t = useT();
 
+	const { selectedElements } = useElementSelection();
 	const snappingEnabled = useTimelineStore((s) => s.snappingEnabled);
 	const rippleEditingEnabled = useTimelineStore((s) => s.rippleEditingEnabled);
 	const toggleSnapping = useTimelineStore((s) => s.toggleSnapping);
@@ -299,7 +310,7 @@ function ToolbarRightSection({
 				<ToolbarButton
 					icon={<HugeiconsIcon icon={MagnetIcon} />}
 					isActive={snappingEnabled}
-					tooltip={t("Auto snapping")}
+					tooltip={t("Auto snapping (N). Hold Shift while dragging to bypass.")}
 					onClick={() => toggleSnapping()}
 				/>
 
@@ -314,7 +325,19 @@ function ToolbarRightSection({
 			<div className="bg-border mx-1 h-6 w-px" />
 
 			<div className="flex items-center gap-1">
+				<Button variant="text" size="sm" onClick={onFitProject}>
+					{t("Fit project")}
+				</Button>
 				<Button
+					variant="text"
+					size="sm"
+					disabled={selectedElements.length === 0}
+					onClick={onFitSelection}
+				>
+					{t("Fit selection")}
+				</Button>
+				<Button
+					aria-label={t("Zoom out")}
 					variant="text"
 					size="icon"
 					onClick={() => onZoom({ direction: "out" })}
@@ -322,6 +345,7 @@ function ToolbarRightSection({
 					<HugeiconsIcon icon={SearchMinusIcon} />
 				</Button>
 				<Slider
+					aria-label={t("Timeline zoom")}
 					className="w-28"
 					value={[zoomToSlider({ zoomLevel, minZoom })]}
 					onValueChange={(values) =>
@@ -334,6 +358,7 @@ function ToolbarRightSection({
 				<Button
 					variant="text"
 					size="icon"
+					aria-label={t("Zoom in")}
 					onClick={() => onZoom({ direction: "in" })}
 				>
 					<HugeiconsIcon icon={SearchAddIcon} />
@@ -362,6 +387,8 @@ function ToolbarButton({
 
 	const button = (
 		<Button
+			aria-label={tooltip}
+			aria-pressed={isActive}
 			variant={isActive ? "secondary" : "text"}
 			size="icon"
 			disabled={disabled}

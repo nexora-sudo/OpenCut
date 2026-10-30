@@ -106,10 +106,43 @@ async function collectNode({
 			textures,
 		});
 		const progress = node.resolved.progress;
-		if (node.params.transition.type === "dissolve") {
+		const kind = node.params.transition.type;
+		if (kind === "dissolve" || kind === "zoom-in") {
 			for (const item of toItems)
-				if (item.type === "layer") item.opacity *= progress;
+				if (item.type === "layer") {
+					item.opacity *= progress;
+					if (kind === "zoom-in") {
+						const scale = 1.2 - 0.2 * progress;
+						item.transform.centerX =
+							renderer.width / 2 +
+							(item.transform.centerX - renderer.width / 2) * scale;
+						item.transform.centerY =
+							renderer.height / 2 +
+							(item.transform.centerY - renderer.height / 2) * scale;
+						item.transform.width *= scale;
+						item.transform.height *= scale;
+						if (item.mask) {
+							const texture = textures.get(item.mask.textureId);
+							if (texture?.kind === "rendered") {
+								const draw = texture.draw;
+								texture.contentHash += `:zoom=${scale}`;
+								texture.draw = (ctx) => {
+									ctx.save();
+									ctx.translate(renderer.width / 2, renderer.height / 2);
+									ctx.scale(scale, scale);
+									ctx.translate(-renderer.width / 2, -renderer.height / 2);
+									draw(ctx);
+									ctx.restore();
+								};
+							}
+						}
+					}
+				}
 		} else {
+			const vertical = kind === "slide-up" || kind === "slide-down";
+			const direction =
+				kind === "slide-right" || kind === "slide-down" ? -1 : 1;
+			const distance = vertical ? renderer.height : renderer.width;
 			const move = ({
 				layers,
 				offset,
@@ -119,7 +152,8 @@ async function collectNode({
 			}) => {
 				for (const item of layers) {
 					if (item.type !== "layer") continue;
-					item.transform.centerX += offset;
+					if (vertical) item.transform.centerY += offset;
+					else item.transform.centerX += offset;
 					if (item.mask) {
 						const texture = textures.get(item.mask.textureId);
 						if (texture?.kind === "rendered") {
@@ -127,7 +161,7 @@ async function collectNode({
 							texture.contentHash += `:slide=${offset}`;
 							texture.draw = (ctx) => {
 								ctx.save();
-								ctx.translate(offset, 0);
+								ctx.translate(vertical ? 0 : offset, vertical ? offset : 0);
 								draw(ctx);
 								ctx.restore();
 							};
@@ -135,8 +169,8 @@ async function collectNode({
 					}
 				}
 			};
-			move({ layers: fromItems, offset: -progress * renderer.width });
-			move({ layers: toItems, offset: (1 - progress) * renderer.width });
+			move({ layers: fromItems, offset: -progress * distance * direction });
+			move({ layers: toItems, offset: (1 - progress) * distance * direction });
 		}
 		items.push(...fromItems, ...toItems);
 		return;

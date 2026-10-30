@@ -228,8 +228,8 @@ export class ProjectManager {
 
 		const result = await this.editor.renderer.exportProject({
 			options,
-			onProgress: ({ progress, stage }) => {
-				this.exportState = { ...this.exportState, progress, stage };
+			onProgress: ({ progress, stage, statistics }) => {
+				this.exportState = { ...this.exportState, progress, stage, statistics };
 				this.notify();
 			},
 			onCancel: () => this.exportCancelRequested,
@@ -569,10 +569,11 @@ export class ProjectManager {
 			project.name.toLowerCase().includes(searchQuery.toLowerCase()),
 		);
 
-		const [key, order] = sortOption.split("-") as [
-			TProjectSortKey,
-			"asc" | "desc",
-		];
+		const [rawKey, order] = sortOption.split("-");
+		const key: TProjectSortKey =
+			rawKey === "createdAt" || rawKey === "updatedAt" || rawKey === "duration"
+				? rawKey
+				: "name";
 
 		const sortedProjects = [...filteredProjects].sort((a, b) => {
 			const aValue = a[key];

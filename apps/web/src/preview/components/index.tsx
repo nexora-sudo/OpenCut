@@ -8,6 +8,7 @@ import { useContainerSize } from "@/hooks/use-container-size";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { PreviewFrameRenderer } from "@/preview/frame-renderer";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
+import { usePreviewStore } from "@/preview/preview-store";
 import { TICKS_PER_SECOND } from "@/wasm";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import { buildScene } from "@/services/renderer/scene-builder";
@@ -145,6 +146,9 @@ function PreviewCanvas({
 	const editor = useEditor();
 	const activeProject = useEditor((e) => e.project.getActive());
 	const renderTree = useEditor((e) => e.renderer.getRenderTree());
+	const quality = usePreviewStore((state) => state.quality);
+	const renderScale =
+		quality === "quarter" ? 0.25 : quality === "half" ? 0.5 : 1;
 	const isExporting = useEditor((e) => e.project.getExportState().isExporting);
 	const viewport = usePreviewViewportState({
 		canvasHeight: nativeHeight,
@@ -161,10 +165,11 @@ function PreviewCanvas({
 				width: nativeWidth,
 				height: nativeHeight,
 				fps: activeProject.settings.fps,
+				renderScale,
 			}),
 			frameRenderer: new PreviewFrameRenderer<RootNode>(),
 		}),
-		[nativeWidth, nativeHeight, activeProject.settings.fps],
+		[nativeWidth, nativeHeight, activeProject.settings.fps, renderScale],
 	);
 
 	useEffect(() => {

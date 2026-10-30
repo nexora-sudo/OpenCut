@@ -44,6 +44,8 @@ pub struct TransitionOptions {
     pub requested_duration: f64,
     pub time: f64,
     pub frame_duration: f64,
+    #[serde(default)]
+    pub moving: bool,
 }
 
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
@@ -63,7 +65,7 @@ pub struct TransitionState {
 #[export]
 pub fn get_transition_state(options: TransitionOptions) -> TransitionState {
     let TransitionOptions { previous_start, previous_duration, start, duration,
-        requested_duration, time, frame_duration } = options;
+        requested_duration, time, frame_duration, moving } = options;
     let values = [previous_start, previous_duration, start, duration, requested_duration, time, frame_duration];
     let valid = values.iter().all(|value| value.is_finite())
         && previous_start >= 0.0 && previous_duration > 0.0 && start >= 0.0
@@ -79,7 +81,12 @@ pub fn get_transition_state(options: TransitionOptions) -> TransitionState {
             (elapsed / transition_duration).clamp(0.0, 1.0)
         } else { 1.0 },
         active: transition_duration > 0.0 && elapsed >= 0.0 && elapsed < transition_duration,
-        from_time: (start - frame_duration.min(previous_duration)).max(previous_start),
+        from_time: if moving && transition_duration > 0.0 {
+            (start - transition_duration + elapsed.clamp(0.0, transition_duration))
+                .min(start - frame_duration.min(previous_duration)).max(previous_start)
+        } else {
+            (start - frame_duration.min(previous_duration)).max(previous_start)
+        },
     }
 }
 
@@ -98,7 +105,7 @@ mod tests {
     }
     fn transition(time: f64) -> TransitionOptions {
         TransitionOptions { previous_start: 0.0, previous_duration: 240000.0, start: 240000.0,
-            duration: 240000.0, requested_duration: 60000.0, time, frame_duration: 4000.0 }
+            duration: 240000.0, requested_duration: 60000.0, time, frame_duration: 4000.0, moving: false }
     }
     #[test]
     fn transition_boundaries_do_not_extend_the_timeline() {
@@ -122,5 +129,17 @@ mod tests {
         let mut options = transition(240000.0);
         options.requested_duration = f64::NAN;
         assert!(!get_transition_state(options).active);
+    }
+
+    #[test]
+    fn moving_transition_reads_the_outgoing_tail_without_exposing_trimmed_footage() {
+        let mut options = transition(270000.0);
+        options.moving = true;
+        let state = get_transition_state(options);
+        assert_eq!(state.from_time, 210000.0);
+        assert_eq!(state.progress, 0.5);
+        let mut options = transition(299999.0);
+        options.moving = true;
+        assert_eq!(get_transition_state(options).from_time, 236000.0);
     }
 }
