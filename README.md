@@ -1,8 +1,8 @@
 # OpenCut Classic — Community Edition
 
-An independent fork of [OpenCut Classic](https://github.com/OpenCut-app/opencut-classic), maintained by [nexora-sudo](https://github.com/nexora-sudo), with Brazilian Portuguese, Simplified Chinese, English, Japanese and British English interface options.
+An independent fork of [OpenCut Classic](https://github.com/OpenCut-app/opencut-classic), maintained by [nexora-sudo](https://github.com/nexora-sudo), with Brazilian Portuguese, Simplified Chinese, English, Japanese, British English, Spanish and French interface options.
 
-**Português:** editor de vídeo com interface em português do Brasil, chinês simplificado, inglês, japonês e inglês do Reino Unido. Veja o [guia de teste local em português](LOCAL-TESTING.pt-BR.md).
+**Português:** editor de vídeo com interface em português do Brasil, chinês simplificado, inglês, japonês, inglês do Reino Unido, espanhol e francês. Veja o [guia de teste local em português](LOCAL-TESTING.pt-BR.md).
 
 This fork uses the original Classic editor. Upstream Classic is archived; the [OpenCut rewrite](https://github.com/OpenCut-app/OpenCut) is a different codebase. This is an independent community project, not an official OpenCut release.
 
@@ -17,6 +17,18 @@ This fork welcomes community bug fixes, feature proposals and translation improv
 - [Contribute code or documentation](.github/CONTRIBUTING.md)
 
 Search for existing requests before posting. Add reactions to ideas you support. Reports are reviewed by the maintainer; suggestions are not guaranteed to be implemented. See the [contribution guide](.github/CONTRIBUTING.md) for labels and the review process.
+
+## Editing, recovery and creative tools (v0.4.0)
+
+- **Preview quality:** choose Original, ½ or ¼ resolution in the preview toolbar. This reduces presentation rendering work without changing project coordinates or export resolution. Source media still decodes at its native size; this is not a proxy-file system.
+- **Export progress:** see processed/total frames, measured processing speed and an estimate for the remaining frame processing. Finalization may take additional time. Cancellation, stalled-operation errors and temporary disk output remain available.
+- **Editing history:** open **Editing history** next to the backup controls. Up to 20 recent editing snapshots are kept in this browser, automatically at least 30 seconds apart when edits are saved, or manually with **Save snapshot now**. Restore creates a separate project with its required media. History disappears when you delete its project or clear browser storage; keep portable `.opencut` backups too.
+- **Transitions:** Dissolve, Slide left/right/up/down and Zoom in. Select the second adjacent visual clip, choose a transition and set its duration. New transitions can keep both clips moving by replaying the outgoing tail over the incoming clip; the project length stays unchanged. Optional audio crossfade mixes enabled clip audio. Audio crossfade does not support clips with a speed curve. Existing projects retain their original frozen-frame setting.
+- **Effects:** Sepia, Warm, Cool, Vivid and Negative join Blur and Black and white. Change intensity, toggle an effect or hold **Compare before / after** in its properties to see the original without committing an edit.
+- **Timeline:** fit the entire project or selected clips into view, with clearer zoom, snapping and cut controls. Existing shortcuts remain **S** (split), **Q/W** (split and remove a side) and **N** (snapping); hold **Shift** while dragging to bypass snapping.
+- **Languages:** Spanish and French catalogs join the existing five options. New controls and messages are localized in all seven.
+
+See the [0.4.0 validation report](docs/VALIDATION-0.4.0.md) for tested media, formats and remaining limits.
 
 ## Transition and effect fixes (v0.3.4)
 
@@ -55,6 +67,8 @@ See the [repeatable browser checks](scripts/qa/README.md) for test scope. MP4/We
 | English                       | `en`    |
 | 日本語 — Japanese             | `ja`    |
 | English (United Kingdom)      | `en-GB` |
+| Español — Spanish             | `es`    |
+| Français — French             | `fr`    |
 
 Open the **gear icon** in the projects page or editor header, or select **Settings → Language** in the editor sidebar. Your preference is saved in this browser for future visits.
 

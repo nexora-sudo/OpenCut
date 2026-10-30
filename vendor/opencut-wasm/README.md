@@ -1,8 +1,8 @@
 # Community renderer build
 
-Built from this repository's Rust sources with wasm-bindgen **0.2.116**, targeting the browser bundler. This extends OpenCut's MIT-licensed `opencut-wasm` 0.2.10 with export sizing, transition timing, and a grayscale GPU shader.
+Built from this repository's Rust sources with wasm-bindgen **0.2.116**, targeting the browser bundler. This extends OpenCut's MIT-licensed `opencut-wasm` 0.2.10 with export sizing, frozen and moving transition timing, grayscale and five color-look GPU effects.
 
-Build and Rust unit test provenance: https://github.com/nexora-sudo/OpenCut/actions/runs/40222520496 (source commit `1a7a188d`). The downloaded artifact was verified against GitHub's SHA-256 digest `cce8d55e3171e1a08c16b737c7ce483378bf922beb70382f9010772c440e9539`.
+Build and Rust unit test provenance: https://github.com/nexora-sudo/OpenCut/actions/runs/41044535592 (source commit `209a1c0d26bf21d8c11803296a97a342929ff1f9`). The downloaded artifact was verified against GitHub's SHA-256 digest `fb1f651726de7e040bd963bb15338ff48d3a8ab3a62d1ac9cbf3f27e70e4d4c4`. The included `opencut_wasm_bg.wasm` has SHA-256 `bdb8de9163c5b730f850756aa6d1a5edec34715bf7c6d97e69b59e22dd619da4`.
 
 The generated WASM and JavaScript are checked in so Vercel and local users do not need a Rust toolchain. Both workspace dependency declarations point here. Do not hand-edit generated bindings.
 

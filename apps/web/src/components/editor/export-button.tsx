@@ -295,6 +295,36 @@ function ExportPopover({
 									<p role="status" className="text-muted-foreground text-xs">
 										{exportState.stage}
 									</p>
+									{exportState.statistics && (
+										<div className="text-muted-foreground space-y-1 text-xs tabular-nums">
+											<p>
+												{t("{v0} / {v1} frames · {v2} fps", {
+													v0: exportState.statistics.encodedFrames,
+													v1: exportState.statistics.totalFrames,
+													v2: exportState.statistics.framesPerSecond.toFixed(1),
+												})}
+											</p>
+											{exportState.statistics.encodedFrames <
+												exportState.statistics.totalFrames && (
+												<p>
+													{exportState.statistics.estimatedRemainingSeconds ===
+													undefined
+														? t("Estimating time remaining…")
+														: t("About {v0} remaining", {
+																v0: formatRemainingTime(
+																	exportState.statistics
+																		.estimatedRemainingSeconds,
+																),
+															})}
+												</p>
+											)}
+											<p>
+												{t(
+													"Estimate covers frame processing. Finalizing the file may take additional time.",
+												)}
+											</p>
+										</div>
+									)}
 								</div>
 
 								<Button
@@ -361,4 +391,14 @@ function ExportError({
 			</div>
 		</div>
 	);
+}
+
+function formatRemainingTime(seconds: number): string {
+	const total = Math.max(0, Math.ceil(seconds));
+	const hours = Math.floor(total / 3600);
+	const minutes = Math.floor((total % 3600) / 60);
+	const remainder = total % 60;
+	return hours > 0
+		? `${hours}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`
+		: `${minutes}:${String(remainder).padStart(2, "0")}`;
 }

@@ -22,6 +22,7 @@ import {
 	type ExportFormat,
 	type ExportQuality,
 	type ExportResult,
+	type ExportStatistics,
 } from "@/export";
 import { CanvasRenderer } from "./canvas-renderer";
 import type { ExportAudioRenderer } from "@/media/export-audio";
@@ -36,7 +37,7 @@ const qualityMap = {
 	very_high: QUALITY_VERY_HIGH,
 };
 export class SceneExporter extends EventEmitter<{
-	progress: [progress: number, stage: string];
+	progress: [progress: number, stage: string, statistics?: ExportStatistics];
 }> {
 	private renderer: CanvasRenderer;
 	private controller = new AbortController();
@@ -66,10 +67,16 @@ export class SceneExporter extends EventEmitter<{
 		const fps = frameRateToFloat(this.renderer.fps);
 		const duration = rootNode.duration / TICKS_PER_SECOND;
 		const frameCount = Math.ceil(duration * fps);
+		let statistics: ExportStatistics | undefined;
+		let completedFrames = 0;
+		let progress = 0;
+		const report = (stage: string) =>
+			this.emit("progress", progress, stage, statistics);
 		let output: Output | undefined;
 		let destination: Awaited<ReturnType<typeof createExportOutput>> | undefined;
 		let succeeded = false;
 		try {
+			report(translate("Checking video codec"));
 			const codec = this.options.format === "webm" ? "vp9" : "avc";
 			const encoding = {
 				width: this.options.width,
@@ -124,6 +131,7 @@ export class SceneExporter extends EventEmitter<{
 					bitrate: 192000,
 				});
 			}
+			report(translate("Preparing output file"));
 			destination = await step(translate("Preparing output file"), () =>
 				createExportOutput({
 					mimeType: getExportMimeType({ format: this.options.format }),
@@ -159,18 +167,16 @@ export class SceneExporter extends EventEmitter<{
 			});
 			output.addVideoTrack(video, { frameRate: fps });
 			if (audioSource) output.addAudioTrack(audioSource);
+			report(translate("Starting encoder"));
 			await step(translate("Starting encoder"), () => output!.start());
+			const startedAt = performance.now();
 			let audioUntil = 0;
 			for (let i = 0; i < frameCount; i++) {
 				const seconds = i / fps;
 				if (audioSource && this.options.audio && seconds >= audioUntil - 1e-8) {
 					const audioDuration = Math.min(1, duration - audioUntil);
 					if (audioDuration > 0) {
-						this.emit(
-							"progress",
-							(i / frameCount) * 0.97,
-							translate("Mixing audio"),
-						);
+						report(translate("Mixing audio"));
 						const audio = await step(translate("Mixing audio"), () =>
 							this.options.audio!.render({
 								start: audioUntil,
@@ -217,19 +223,38 @@ export class SceneExporter extends EventEmitter<{
 				await step(translate("Encoding video"), () =>
 					video.add(seconds, Math.min(1 / fps, duration - seconds)),
 				);
-				if (i % Math.max(1, Math.round(fps / 4)) === 0) {
-					this.emit(
-						"progress",
-						((i + 1) / frameCount) * 0.97,
-						translate("Encoding video"),
-					);
+				completedFrames = i + 1;
+				if (
+					i % Math.max(1, Math.round(fps / 4)) === 0 ||
+					completedFrames === frameCount
+				) {
+					const elapsedSeconds = (performance.now() - startedAt) / 1000;
+					const framesPerSecond =
+						elapsedSeconds > 0 ? completedFrames / elapsedSeconds : 0;
+					statistics = {
+						encodedFrames: completedFrames,
+						totalFrames: frameCount,
+						elapsedSeconds,
+						framesPerSecond,
+						estimatedRemainingSeconds:
+							elapsedSeconds >= 1 && completedFrames >= 3 && framesPerSecond > 0
+								? (frameCount - completedFrames) / framesPerSecond
+								: undefined,
+					};
+					progress = (completedFrames / frameCount) * 0.97;
+					report(translate("Rendering and encoding video"));
 					await new Promise((resolve) => setTimeout(resolve, 0));
 				}
 			}
 			video.close();
 			audioSource?.close();
-			this.emit("progress", 0.98, translate("Finalizing file"));
+			progress = 0.98;
+			if (statistics)
+				statistics = { ...statistics, estimatedRemainingSeconds: undefined };
+			report(translate("Finalizing file"));
 			await step(translate("Finalizing file"), () => output!.finalize());
+			progress = 0.99;
+			report(translate("Preparing download"));
 			const result = await step(translate("Preparing download"), () =>
 				destination!.finish(),
 			);

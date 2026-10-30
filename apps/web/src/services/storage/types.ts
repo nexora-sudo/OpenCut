@@ -15,6 +15,7 @@ export interface StorageAdapter<T> {
 }
 
 export interface MediaAssetData {
+	historyOnly?: boolean;
 	id: string;
 	name: string;
 	type: MediaType;

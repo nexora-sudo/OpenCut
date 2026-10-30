@@ -162,6 +162,7 @@ export interface GraphicElement extends BaseTimelineElement {
 export interface EffectElement extends BaseTimelineElement {
 	type: "effect";
 	effectType: string;
+	enabled?: boolean;
 }
 
 export type ElementUpdatePatch = { params?: Partial<ParamValues> };

@@ -10,6 +10,7 @@ import { ColorNode } from "./nodes/color-node";
 import { BlurBackgroundNode } from "./nodes/blur-background-node";
 import { EffectLayerNode } from "./nodes/effect-layer-node";
 import { TransitionNode } from "./nodes/transition-node";
+import { TRANSITIONS } from "@/transitions/types";
 import type { AnyBaseNode } from "./nodes/base-node";
 import type { TBackground, TCanvasSize } from "@/project/types";
 import { DEFAULT_BACKGROUND_BLUR_INTENSITY } from "@/background/blur";
@@ -51,6 +52,7 @@ function buildTrackNodes({
 		for (const element of elements) {
 			const nodeIndex = nodes.length;
 			if (element.type === "effect") {
+				if (element.enabled === false) continue;
 				nodes.push(
 					new EffectLayerNode({
 						effectType: element.effectType,
@@ -175,7 +177,7 @@ function buildTrackNodes({
 			if (
 				!transition ||
 				transition.fromElementId !== previous.id ||
-				!["dissolve", "slide-left"].includes(transition.type)
+				!TRANSITIONS.some((option) => option.type === transition.type)
 			)
 				continue;
 			const to = nodesById.get(element.id);
@@ -183,7 +185,12 @@ function buildTrackNodes({
 			if (!to || !previousNode) continue;
 			const from =
 				previousNode instanceof VideoNode
-					? new VideoNode({ ...previousNode.params })
+					? new VideoNode({
+							...previousNode.params,
+							mediaId: transition.moving
+								? `${previousNode.params.mediaId}:transition-tail:${previous.id}`
+								: previousNode.params.mediaId,
+						})
 					: new ImageNode({ ...previousNode.params });
 			const nodeIndex = nodes.indexOf(to);
 			nodes[nodeIndex] = new TransitionNode({ from, to, transition });

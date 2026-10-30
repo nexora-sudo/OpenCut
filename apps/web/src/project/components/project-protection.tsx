@@ -9,6 +9,7 @@ import { createProjectBackup, readProjectBackup } from "@/project/backup";
 import { downloadBlob } from "@/utils/browser";
 import { storageService } from "@/services/storage/service";
 import { CURRENT_PROJECT_VERSION } from "@/services/storage/migrations";
+import { ProjectHistoryDialog } from "./project-history-dialog";
 
 export function ProjectProtection() {
 	const editor = useEditor();
@@ -131,6 +132,7 @@ export function ProjectProtection() {
 			>
 				{t(busy ? "Preparing backup..." : "Download backup")}
 			</Button>
+			<ProjectHistoryDialog />
 		</div>
 	);
 }

@@ -32,7 +32,9 @@ export async function showMediaUploadToast<T extends MediaUploadToastResult>({
 			return run();
 		},
 		{
-			loading: `Uploading ${getAssetLabel({ count: filesCount })}...`,
+			loading: translate("Uploading {v0}...", {
+				v0: getAssetLabel({ count: filesCount }),
+			}),
 			success: ({ uploadedCount, assetNames }) => {
 				if (uploadedCount === 1) {
 					const assetName = assetNames?.[0];
@@ -42,12 +44,16 @@ export async function showMediaUploadToast<T extends MediaUploadToastResult>({
 				}
 
 				if (uploadedCount > 1) {
-					return `${uploadedCount} media assets have been uploaded`;
+					return translate("{v0} media assets have been uploaded", {
+						v0: uploadedCount,
+					});
 				}
 
-				return "No media assets were uploaded";
+				return translate("No media assets were uploaded");
 			},
-			error: `Failed to upload ${getAssetLabel({ count: filesCount })}`,
+			error: translate("Failed to upload {v0}", {
+				v0: getAssetLabel({ count: filesCount }),
+			}),
 		},
 	);
 

@@ -7,6 +7,7 @@ import {
 	type AudioClipSource,
 } from "./audio";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
+import { createAudioClipGainResolver } from "./transition-audio";
 import {
 	hasAnimatedVolume,
 	resolveEffectiveAudioGain,
@@ -191,18 +192,22 @@ export class ExportAudioRenderer {
 					signal: this.signal,
 				});
 				const offset = Math.round((from - start) * SAMPLE_RATE);
-				const animated = hasAnimatedVolume({ element: clip.timelineElement });
+				const resolveGain = createAudioClipGainResolver({
+					clip,
+					resolveBaseGain: hasAnimatedVolume({ element: clip.timelineElement })
+						? (localTime) =>
+								resolveEffectiveAudioGain({
+									element: clip.timelineElement,
+									localTime,
+								})
+						: undefined,
+				});
 				for (
 					let i = 0;
 					i < rendered.length && offset + i < output.length;
 					i++
 				) {
-					const gain = animated
-						? resolveEffectiveAudioGain({
-								element: clip.timelineElement,
-								localTime: localFrom + i / SAMPLE_RATE,
-							})
-						: clip.volume;
+					const gain = resolveGain(localFrom + i / SAMPLE_RATE);
 					for (let ch = 0; ch < 2; ch++)
 						output.getChannelData(ch)[offset + i] +=
 							rendered.getChannelData(

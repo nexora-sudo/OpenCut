@@ -90,9 +90,15 @@ async function resolveNode({
 			requestedDuration: transition.duration,
 			time: context.time,
 			frameDuration: TICKS_PER_SECOND / frameRateToFloat(context.renderer.fps),
+			moving: transition.moving ?? false,
 		});
 		if (node.resolved.active) {
-			if (!node.frozenFrom) {
+			if (transition.moving) {
+				await resolveNode({
+					node: from,
+					context: { ...context, time: node.resolved.fromTime },
+				});
+			} else if (!node.frozenFrom) {
 				await resolveNode({
 					node: from,
 					context: { ...context, time: node.resolved.fromTime },
@@ -108,7 +114,7 @@ async function resolveNode({
 					node.frozenFrom = { ...from.resolved, source: snapshot.canvas };
 				}
 			}
-			from.resolved = node.frozenFrom;
+			if (!transition.moving) from.resolved = node.frozenFrom;
 		} else {
 			node.frozenFrom = null;
 			from.resolved = null;

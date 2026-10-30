@@ -110,6 +110,7 @@ export interface TransitionOptions {
     requestedDuration: number;
     time: number;
     frameDuration: number;
+    moving?: boolean;
 }
 
 export interface TransitionState {

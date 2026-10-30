@@ -55,6 +55,7 @@ import {
 	getTimelinePaddingPx,
 } from "@/timeline";
 import { timelineTimeToPixels } from "@/timeline/pixel-utils";
+import { TIMELINE_ZOOM_MAX } from "@/timeline/scale";
 import {
 	getTrackHeight,
 	getCumulativeHeightBefore,
@@ -186,6 +187,49 @@ export function Timeline() {
 			tracksScrollRef,
 			rulerScrollRef,
 		});
+	const fitTimeline = (selectionOnly: boolean) => {
+		const elements = selectionOnly
+			? editor.timeline
+					.getElementsWithTracks({ elements: selectedElements })
+					.map(({ element }) => element)
+			: [];
+		if (selectionOnly && elements.length === 0) return;
+		const start = selectionOnly
+			? Math.min(...elements.map((element) => element.startTime))
+			: 0;
+		const end = selectionOnly
+			? Math.max(
+					...elements.map((element) => element.startTime + element.duration),
+				)
+			: timelineDuration;
+		const width = tracksScrollRef.current?.clientWidth ?? containerWidth;
+		const rangePixels = timelineTimeToPixels({
+			time: Math.max(1, end - start),
+			zoomLevel: 1,
+		});
+		const zoom = Math.max(
+			minZoomLevel,
+			Math.min(TIMELINE_ZOOM_MAX, (width * 0.85) / rangePixels),
+		);
+		setZoomLevel(zoom);
+		requestAnimationFrame(() => {
+			const scrollLeft = Math.max(
+				0,
+				timelineTimeToPixels({ time: start, zoomLevel: zoom }) - width * 0.075,
+			);
+			if (tracksScrollRef.current)
+				tracksScrollRef.current.scrollLeft = scrollLeft;
+			if (rulerScrollRef.current)
+				rulerScrollRef.current.scrollLeft = scrollLeft;
+			editor.project.setTimelineViewState({
+				viewState: {
+					zoomLevel: zoom,
+					scrollLeft,
+					playheadTime: editor.playback.getCurrentTime(),
+				},
+			});
+		});
+	};
 	const { isResizing, handleResizeStart } = useTimelineResize({
 		zoomLevel,
 		onSnapPointChange: handleSnapPointChange,
@@ -440,6 +484,8 @@ export function Timeline() {
 			aria-label={t("Timeline")}
 		>
 			<TimelineToolbar
+				onFitProject={() => fitTimeline(false)}
+				onFitSelection={() => fitTimeline(true)}
 				zoomLevel={zoomLevel}
 				minZoom={minZoomLevel}
 				setZoomLevel={({ zoom }) => setZoomLevel(zoom)}
